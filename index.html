@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrickForge — AI Roblox 3D Model Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrickForge — AI Roblox 3D Model Generator & Knowledge System</title>
+    <!-- Inter & JetBrains Mono Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- Three.js Import Map -->
     <script type="importmap">
     {
@@ -18,57 +23,85 @@
     <style>
         :root {
             --bg-base: #070709;
-            --bg-surface: rgba(18, 18, 22, 0.75);
+            --bg-surface: rgba(18, 18, 22, 0.82);
             --bg-surface-solid: #121216;
-            --bg-elevated: rgba(28, 28, 35, 0.85);
             --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.18);
-            --text-primary: #f4f4f6;
-            --text-secondary: #9898a6;
-            --text-muted: #5e5e6c;
-            --accent: #ededef;
-            --accent-hover: #ffffff;
-            --accent-dark: #1e1e24;
-            --danger: #ff453a;
-            --success: #30d158;
-            --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --text-dim: #71717a;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: var(--font-system);
-            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-primary);
+        body, html {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Glass Surface */
+        .glass {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .glass-solid {
+            background: var(--bg-surface-solid);
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Layout */
+        #app {
+            position: relative;
             width: 100vw;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Top Navigation Header */
+        /* Top Navigation */
         header {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 56px;
+            height: 52px;
+            z-index: 30;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
-            z-index: 100;
-            background: linear-gradient(to bottom, rgba(7,7,9,0.9) 0%, rgba(7,7,9,0) 100%);
+            padding: 0 16px;
             pointer-events: none;
         }
 
@@ -82,884 +115,1089 @@
             gap: 10px;
         }
 
-        .logo-icon {
+        .logo-mark {
             width: 28px;
             height: 28px;
-            background: var(--text-primary);
-            border-radius: 6px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--bg-base);
-            font-weight: 700;
-            font-size: 14px;
-            letter-spacing: -0.5px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
-        .logo-title {
-            font-size: 15px;
+        .logo-text {
             font-weight: 600;
-            letter-spacing: -0.3px;
-            color: var(--text-primary);
+            font-size: 14px;
+            letter-spacing: -0.01em;
+            color: #ffffff;
         }
 
-        .status-pill {
+        .status-badge {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            background: var(--bg-surface);
             padding: 4px 10px;
             border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-subtle);
-            backdrop-filter: blur(12px);
         }
 
         .status-dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: var(--text-muted);
-            transition: var(--transition);
+            background: #10b981;
         }
-
-        .status-dot.ready { background: var(--success); }
-        .status-dot.generating { background: #ff9f0a; animation: pulse 1s infinite; }
-        .status-dot.error { background: var(--danger); }
+        .status-dot.loading { background: #3b82f6; animation: pulse 1.5s infinite; }
+        .status-dot.error { background: #ef4444; }
 
         @keyframes pulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .nav-actions {
             display: flex;
+            align-items: center;
             gap: 8px;
         }
 
         .btn {
-            background: var(--bg-surface);
-            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-subtle);
+            color: var(--text-main);
             padding: 6px 12px;
-            font-size: 13px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 500;
-            border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: var(--transition);
-            backdrop-filter: blur(12px);
-            display: inline-flex;
+            transition: all 0.2s ease;
+            display: flex;
             align-items: center;
             gap: 6px;
-            user-select: none;
         }
 
         .btn:hover {
-            background: var(--bg-elevated);
+            background: rgba(255, 255, 255, 0.1);
             border-color: var(--border-hover);
-        }
-
-        .btn:active {
-            transform: scale(0.97);
         }
 
         .btn-primary {
-            background: var(--text-primary);
-            color: var(--bg-base);
-            border-color: transparent;
-            font-weight: 600;
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
 
         .btn-primary:hover {
-            background: #ffffff;
-            opacity: 0.9;
+            background: #2563eb;
+            border-color: #2563eb;
         }
 
-        /* 3D Viewport Hero */
+        .btn-icon {
+            padding: 6px;
+            border-radius: 8px;
+        }
+
+        /* 3D Viewport */
         #viewport-container {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            inset: 0;
             z-index: 1;
+            background: var(--bg-base);
         }
 
-        #webgl-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        /* Viewport Floating Toolbar (Top Right / Middle) */
+        /* Floating Viewport Toolbar (Top Right) */
         .viewport-toolbar {
             position: absolute;
-            top: 68px;
-            right: 20px;
+            top: 64px;
+            right: 16px;
+            z-index: 20;
             display: flex;
-            flex-direction: column;
             gap: 6px;
-            z-index: 10;
+            padding: 4px;
+            border-radius: 10px;
+            pointer-events: auto;
         }
 
-        .tool-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            background: var(--bg-surface);
+        /* Model Stats Panel (Top Left) */
+        .model-stats {
+            position: absolute;
+            top: 64px;
+            left: 16px;
+            z-index: 20;
+            padding: 10px 14px;
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 260px;
+            pointer-events: none;
+        }
+        .model-stats.visible { display: flex; }
+        .model-stats-title { font-weight: 600; font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .model-stats-grid { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 12px; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .model-stats-grid span strong { color: var(--text-main); }
+
+        /* Empty State */
+        .viewport-empty {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .viewport-empty.hidden { opacity: 0; pointer-events: none; }
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-subtle);
-            color: var(--text-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(12px);
-            transition: var(--transition);
+            color: var(--text-dim);
+            margin-bottom: 12px;
         }
+        .empty-title { font-weight: 600; font-size: 14px; color: var(--text-main); margin-bottom: 4px; }
+        .empty-desc { font-size: 12px; color: var(--text-muted); max-width: 280px; }
 
-        .tool-btn:hover {
-            background: var(--bg-elevated);
-            border-color: var(--border-hover);
-        }
-
-        .tool-btn.active {
-            background: var(--text-primary);
-            color: var(--bg-base);
-            border-color: transparent;
-        }
-
-        /* Model Stats & Actions Overlay (Top Left below header) */
-        .model-info-overlay {
-            position: absolute;
-            top: 68px;
-            left: 20px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            backdrop-filter: blur(16px);
-            z-index: 10;
-            max-width: 280px;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .model-info-overlay.visible {
-            display: block;
-        }
-
-        .model-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .model-desc {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .model-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 8px;
-        }
-
-        .stat-item span {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        .model-actions-row {
-            display: flex;
-            gap: 6px;
-        }
-
-        .model-actions-row .btn {
-            flex: 1;
-            justify-content: center;
-            font-size: 12px;
-            padding: 5px 8px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Bottom Floating Generation Panel */
+        /* Bottom Generation Panel (Sheet) */
         .generation-panel {
             position: absolute;
-            bottom: 20px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
-            max-width: 600px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 12px;
-            backdrop-filter: blur(20px);
-            z-index: 10;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            width: calc(100% - 32px);
+            max-width: 620px;
+            z-index: 25;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
         }
 
-        .prompt-textarea {
+        .prompt-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 10px 12px;
+            transition: border-color 0.2s;
+        }
+        .prompt-wrapper:focus-within {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        textarea.prompt-input {
             width: 100%;
             background: transparent;
             border: none;
-            color: var(--text-primary);
-            font-size: 14px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 13px;
             resize: none;
             outline: none;
-            min-height: 48px;
-            max-height: 120px;
-            line-height: 1.4;
-            padding: 4px 6px;
+            min-height: 40px;
+            max-height: 100px;
+        }
+        textarea.prompt-input::placeholder {
+            color: var(--text-dim);
         }
 
-        .prompt-textarea::placeholder {
+        .panel-options-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 2px;
+            font-size: 11px;
             color: var(--text-muted);
         }
 
-        .panel-controls-row {
+        .panel-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            outline: none;
+            cursor: pointer;
+        }
+        .panel-select option { background: #121216; color: #fff; }
+
+        .panel-toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 10px;
-            margin-top: 6px;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        .panel-left-tools {
+        .toolbar-left {
             display: flex;
             align-items: center;
             gap: 6px;
-            flex-wrap: wrap;
         }
 
-        .quality-selector {
+        .quality-pill-group {
             display: flex;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
+            border-radius: 8px;
             padding: 2px;
         }
 
-        .quality-btn {
+        .quality-pill {
             background: transparent;
             border: none;
-            color: var(--text-secondary);
-            font-size: 11px;
-            font-weight: 500;
+            color: var(--text-muted);
             padding: 4px 10px;
             border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s;
+        }
+        .quality-pill.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
         }
 
-        .quality-btn.active {
-            background: var(--bg-elevated);
-            color: var(--text-primary);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .image-upload-wrapper {
-            position: relative;
-        }
-
-        .image-upload-btn {
-            background: transparent;
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-            width: 30px;
-            height: 30px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .image-upload-btn:hover {
-            background: var(--bg-elevated);
-            color: var(--text-primary);
-            border-color: var(--border-hover);
-        }
-
+        /* Image preview thumb */
         .image-preview-badge {
-            position: absolute;
-            bottom: 38px;
-            left: 0;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-hover);
-            border-radius: var(--radius-sm);
-            padding: 4px;
             display: none;
             align-items: center;
             gap: 6px;
-            backdrop-filter: blur(12px);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #93c5fd;
+            margin-top: 6px;
+            width: max-content;
         }
+        .image-preview-badge.visible { display: flex; }
+        .image-preview-badge img { width: 16px; height: 16px; object-fit: cover; border-radius: 3px; }
+        .remove-img-btn { background: none; border: none; color: #93c5fd; cursor: pointer; font-size: 14px; padding: 0 2px; }
 
-        .image-preview-badge.visible {
-            display: flex;
-        }
-
-        .image-preview-thumb {
-            width: 32px;
-            height: 32px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .image-remove-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 14px;
-            padding: 2px;
-        }
-
-        .image-remove-btn:hover {
-            color: var(--danger);
-        }
-
-        /* Modals (Settings, History, Code) */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: flex;
+        /* Post-Gen Actions & Feedback (Top Right, below toolbar) */
+        .post-gen-actions {
+            position: absolute;
+            top: 64px;
+            right: 175px;
+            z-index: 20;
+            display: none;
+            gap: 6px;
             align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-        }
-
-        .modal-backdrop.open {
-            opacity: 1;
             pointer-events: auto;
         }
+        .post-gen-actions.visible { display: flex; }
+
+        .feedback-group {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 2px;
+        }
+        .feedback-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .feedback-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-main); }
+        .feedback-btn.active-good { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .feedback-btn.active-poor { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        /* Modals / Drawers */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        .modal-overlay.open { display: flex; opacity: 1; pointer-events: auto; }
 
         .modal-card {
-            background: var(--bg-surface-solid);
-            border: 1px solid var(--border-hover);
-            width: 90%;
+            width: 100%;
             max-width: 480px;
-            border-radius: var(--radius-lg);
+            border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 24px 48px rgba(0,0,0,0.6);
-            transform: scale(0.96);
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            max-height: 85vh;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
             display: flex;
             flex-direction: column;
+            gap: 16px;
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 85vh;
+            overflow-y: auto;
         }
-
-        .modal-backdrop.open .modal-card {
-            transform: scale(1);
-        }
+        .modal-overlay.open .modal-card { transform: scale(1); }
 
         .modal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
         }
-
-        .modal-title {
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-        }
-
-        .modal-close {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .modal-close:hover {
-            background: var(--bg-elevated);
-            color: var(--text-primary);
-        }
-
-        .modal-body {
-            overflow-y: auto;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            padding-right: 2px;
-        }
+        .modal-title { font-weight: 600; font-size: 15px; color: var(--text-main); }
+        .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; }
+        .modal-close:hover { color: var(--text-main); }
 
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
-        .form-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-secondary);
+        .form-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+        .form-input-row {
+            position: relative;
+            display: flex;
+            align-items: center;
         }
-
-        .form-input {
-            background: rgba(0,0,0,0.3);
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             padding: 10px 12px;
-            color: var(--text-primary);
+            color: var(--text-main);
+            font-family: inherit;
             font-size: 13px;
             outline: none;
-            transition: var(--transition);
+            transition: border-color 0.2s;
         }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: rgba(59, 130, 246, 0.5); }
+        .form-textarea { resize: vertical; min-height: 90px; }
+        .form-select option { background: #121216; color: #fff; }
+        .form-hint { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
 
-        .form-input:focus {
-            border-color: var(--border-hover);
-            background: rgba(0,0,0,0.5);
-        }
-
-        .form-hint {
-            font-size: 11px;
+        .input-action-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
             color: var(--text-muted);
-            line-height: 1.3;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
         }
+        .input-action-btn:hover { color: var(--text-main); }
 
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 20px;
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 14px;
-        }
-
-        /* History List */
-        .history-list {
+        /* History & Knowledge Lists */
+        .list-container {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            max-height: 320px;
+            overflow-y: auto;
         }
-
-        .history-item {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px;
+        .list-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s;
         }
+        .list-item:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--border-hover); }
+        .item-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+        .item-name { font-weight: 600; font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-subtitle { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+        .item-meta { font-size: 10px; color: var(--text-dim); display: flex; gap: 8px; }
 
-        .history-item:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: var(--border-hover);
+        /* Knowledge Notebook Hub */
+        .knowledge-modal-card {
+            max-width: 720px;
         }
-
-        .history-item-info {
+        .knowledge-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 16px;
+            min-height: 380px;
+            max-height: 500px;
+        }
+        .notebook-sidebar {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            overflow: hidden;
-            padding-right: 10px;
+            gap: 6px;
+            border-right: 1px solid var(--border-subtle);
+            padding-right: 12px;
+            overflow-y: auto;
         }
-
-        .history-item-title {
-            font-size: 13px;
+        .notebook-tab {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
         }
+        .notebook-tab:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .notebook-tab.active { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
 
-        .history-item-meta {
-            font-size: 11px;
+        .knowledge-content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+        }
+        .knowledge-toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: var(--text-main);
+            font-size: 12px;
+            outline: none;
+        }
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            background: rgba(255,255,255,0.06);
             color: var(--text-muted);
         }
 
-        /* Code Viewer */
-        .code-viewer-card {
+        /* Luau Code Viewer Modal */
+        .code-modal-card {
             max-width: 640px;
-            height: 75vh;
+            max-height: 85vh;
         }
-
-        .code-textarea {
-            width: 100%;
-            flex: 1;
-            background: #040405;
+        pre.code-block {
+            background: #09090b;
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: #d4d4d8;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 12px;
+            border-radius: 10px;
             padding: 12px;
-            resize: none;
-            outline: none;
-            line-height: 1.4;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #d4d4d8;
+            overflow: auto;
+            max-height: 380px;
+            white-space: pre;
         }
 
-        /* Toast Notifications */
+        /* Toast notifications */
         #toast-container {
             position: fixed;
-            bottom: 90px;
+            bottom: 95px;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 1000;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            z-index: 2000;
             pointer-events: none;
+            width: max-content;
+            max-width: 90vw;
         }
-
         .toast {
-            background: var(--bg-elevated);
-            color: var(--text-primary);
-            border: 1px solid var(--border-hover);
+            background: #18181b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f4f4f5;
             padding: 8px 16px;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             font-size: 12px;
             font-weight: 500;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            animation: toastIn 0.25s ease forwards;
-            pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             gap: 8px;
+            animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .toast.success { border-left: 3px solid var(--success); }
-        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.success { border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+        .toast.error { border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
 
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Empty / Loading WebGL State */
-        .viewport-empty-state {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            z-index: 2;
-            transition: opacity 0.3s ease;
-        }
-
-        .viewport-empty-state.hidden {
-            opacity: 0;
-        }
-
-        .empty-title {
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
-        }
-
-        .empty-subtitle {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        /* Responsive Mobile Layout adjustments */
+        /* Responsive adjustments */
         @media (max-width: 640px) {
-            .generation-panel {
-                width: 95%;
-                bottom: 12px;
-                padding: 10px;
-            }
-            .viewport-toolbar {
-                top: 60px;
-                right: 12px;
-            }
-            .model-info-overlay {
-                top: 60px;
-                left: 12px;
-                max-width: 220px;
-            }
+            .generation-panel { width: calc(100% - 24px); bottom: 12px; padding: 12px; }
+            .viewport-toolbar { top: 58px; right: 12px; }
+            .model-stats { top: 58px; left: 12px; max-width: 200px; }
+            .post-gen-actions { top: 58px; right: 90px; }
+            .knowledge-layout { grid-template-columns: 1fr; min-height: auto; }
+            .notebook-sidebar { max-height: 120px; border-right: none; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Header -->
-    <header>
-        <div class="logo-area">
-            <div class="logo-icon">BF</div>
-            <div class="logo-title">BrickForge</div>
-            <div class="status-pill">
-                <div id="status-dot" class="status-dot ready"></div>
+    <div id="app">
+        <!-- Top Navigation -->
+        <header class="glass">
+            <div class="logo-area">
+                <div class="logo-mark">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="logo-text">BrickForge</span>
+            </div>
+
+            <div class="status-badge" id="status-badge">
+                <div class="status-dot" id="status-dot"></div>
                 <span id="status-text">Ready</span>
             </div>
-        </div>
-        <div class="nav-actions">
-            <button id="btn-history" class="btn" title="Generation History">History</button>
-            <button id="btn-settings" class="btn" title="API Settings">Settings</button>
-        </div>
-    </header>
 
-    <!-- 3D Viewport Hero -->
-    <div id="viewport-container">
-        <canvas id="webgl-canvas"></canvas>
-        <div id="viewport-empty" class="viewport-empty-state">
-            <div class="empty-title">No Model Loaded</div>
-            <div class="empty-subtitle">Describe a Roblox build below to generate in 3D</div>
-        </div>
-    </div>
+            <div class="nav-actions">
+                <button class="btn" id="btn-knowledge" title="Knowledge & Notebooks">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span class="hidden sm:inline">Knowledge</span>
+                </button>
+                <button class="btn" id="btn-history" title="Generation History">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="hidden sm:inline">History</span>
+                </button>
+                <button class="btn" id="btn-settings" title="Settings">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+            </div>
+        </header>
 
-    <!-- Viewport Floating Toolbar -->
-    <div class="viewport-toolbar">
-        <button id="btn-toggle-grid" class="tool-btn active" title="Toggle Grid">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-        </button>
-        <button id="btn-toggle-wire" class="tool-btn" title="Toggle Wireframe">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-        </button>
-        <button id="btn-frame-model" class="tool-btn" title="Frame Model">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-        </button>
-        <button id="btn-reset-cam" class="tool-btn" title="Reset Camera">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        </button>
-    </div>
+        <!-- 3D Viewport -->
+        <div id="viewport-container"></div>
 
-    <!-- Model Stats & Actions Overlay -->
-    <div id="model-info-overlay" class="model-info-overlay">
-        <div id="info-name" class="model-title">Model Name</div>
-        <div id="info-desc" class="model-desc">Description goes here...</div>
-        <div class="model-stats-grid">
-            <div class="stat-item">Parts: <span id="stat-parts">0</span></div>
-            <div class="stat-item">Quality: <span id="stat-quality">Standard</span></div>
-        </div>
-        <div class="model-actions-row">
-            <button id="btn-view-luau" class="btn">View Luau</button>
-            <button id="btn-download-lua" class="btn">Download .lua</button>
-        </div>
-    </div>
-
-    <!-- Bottom Generation Panel -->
-    <div class="generation-panel">
-        <textarea id="prompt-input" class="prompt-textarea" placeholder="Describe a Roblox build (e.g. Medieval stone watchtower with wooden roof)..." rows="1"></textarea>
-        
-        <!-- Image Preview Badge -->
-        <div id="image-preview-badge" class="image-preview-badge">
-            <img id="image-preview-thumb" class="image-preview-thumb" src="" alt="Reference">
-            <button id="btn-remove-image" class="image-remove-btn" title="Remove image">&times;</button>
+        <!-- Empty State -->
+        <div class="viewport-empty" id="viewport-empty">
+            <div class="empty-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div class="empty-title">No Model Generated</div>
+            <div class="empty-desc">Describe a Roblox structure below or rely on your knowledge notebooks to build it in 3D.</div>
         </div>
 
-        <div class="panel-controls-row">
-            <div class="panel-left-tools">
-                <div class="quality-selector">
-                    <button class="quality-btn" data-quality="Quick">Quick</button>
-                    <button class="quality-btn active" data-quality="Standard">Standard</button>
-                    <button class="quality-btn" data-quality="Detailed">Detailed</button>
-                </div>
-                <div class="image-upload-wrapper">
-                    <input type="file" id="image-file-input" accept="image/*" style="display: none;">
-                    <button id="btn-trigger-upload" class="image-upload-btn" title="Upload Reference Image">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    </button>
+        <!-- Floating Viewport Toolbar -->
+        <div class="viewport-toolbar glass">
+            <button class="btn btn-icon" id="btn-toggle-grid" title="Toggle Grid">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+            </button>
+            <button class="btn btn-icon" id="btn-toggle-wire" title="Toggle Wireframe">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+            </button>
+            <button class="btn btn-icon" id="btn-frame-model" title="Frame Model">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            </button>
+            <button class="btn btn-icon" id="btn-reset-cam" title="Reset View">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+        </div>
+
+        <!-- Model Stats Panel -->
+        <div class="model-stats glass" id="model-stats">
+            <div class="model-stats-title" id="stat-name">Model Name</div>
+            <div class="model-stats-grid">
+                <span>Parts: <strong id="stat-parts">0</strong></span>
+                <span>Height: <strong id="stat-height">0</strong></span>
+                <span>Footprint: <strong id="stat-footprint">0</strong></span>
+                <span>Quality: <strong id="stat-quality">Standard</strong></span>
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 2px;" id="stat-refs">References: 0 used</div>
+        </div>
+
+        <!-- Post-Generation Action Buttons & Feedback -->
+        <div class="post-gen-actions" id="post-gen-actions">
+            <div class="feedback-group">
+                <button class="feedback-btn" id="btn-thumbs-up" title="Good Model">👍</button>
+                <button class="feedback-btn" id="btn-thumbs-down" title="Poor Model">👎</button>
+            </div>
+            <button class="btn" id="btn-save-as-ref" title="Save generated model as a knowledge reference script">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Ref
+            </button>
+            <button class="btn" id="btn-view-luau">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                Luau
+            </button>
+            <button class="btn" id="btn-download-lua">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export
+            </button>
+        </div>
+
+        <!-- Bottom Generation Panel -->
+        <div class="generation-panel glass">
+            <div class="prompt-wrapper">
+                <textarea id="prompt-input" class="prompt-input" placeholder="e.g. A medieval stone watchtower with wooden battlements and a crystal..."></textarea>
+                
+                <!-- Image Badge -->
+                <div class="image-preview-badge" id="image-preview-badge">
+                    <img id="image-preview-thumb" src="" alt="Ref">
+                    <span id="image-file-name">image.png</span>
+                    <button class="remove-img-btn" id="btn-remove-image">&times;</button>
                 </div>
             </div>
-            <button id="btn-generate" class="btn btn-primary">Generate Model</button>
-        </div>
-    </div>
 
-    <!-- Settings Modal -->
-    <div id="modal-settings" class="modal-backdrop">
-        <div class="modal-card">
-            <div class="modal-header">
-                <div class="modal-title">Settings</div>
-                <button id="btn-close-settings" class="modal-close">&times;</button>
+            <!-- Knowledge & Options Row -->
+            <div class="panel-options-row">
+                <span>Notebook:</span>
+                <select id="gen-notebook-select" class="panel-select">
+                    <option value="automatic">Automatic (All Notebooks)</option>
+                </select>
+                <span style="margin-left: 4px;">Strength:</span>
+                <select id="gen-strength-select" class="panel-select">
+                    <option value="balanced">Balanced</option>
+                    <option value="low">Low (Inspiration)</option>
+                    <option value="strong">Strong (Strict Pattern)</option>
+                </select>
+                <button class="btn" id="btn-toggle-debug" style="margin-left: auto; font-size: 10px; padding: 2px 6px;">Debug Info</button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label" for="setting-apikey">xKiro API Key</label>
-                    <div style="display: flex; gap: 6px;">
-                        <input type="password" id="setting-apikey" class="form-input" placeholder="xkiro_..." style="flex: 1;">
-                        <button id="btn-toggle-key" class="btn" title="Show/Hide API Key">👁️</button>
+
+            <div class="panel-toolbar">
+                <div class="toolbar-left">
+                    <div class="quality-pill-group">
+                        <button class="quality-pill" data-quality="Quick">Quick</button>
+                        <button class="quality-pill active" data-quality="Standard">Standard</button>
+                        <button class="quality-pill" data-quality="Detailed">Detailed</button>
                     </div>
-                    <div class="form-hint">Stored locally in this browser. Requests are sent directly to xKiro via Cloudflare proxy.</div>
+
+                    <label class="btn btn-icon" title="Add Reference Image">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    </label>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="setting-modelid">xKiro Model ID</label>
-                    <input type="text" id="setting-modelid" class="form-input" value="qwen/qwen3-max:free">
-                    <div class="form-hint">Any valid xKiro model ID (e.g. qwen/qwen3-max:free, qwen/qwen-2.5-72b-instruct).</div>
-                </div>
-                <div style="display: flex; justify-content: flex-start; margin-top: 4px;">
-                    <button id="btn-test-conn" class="btn">Test Connection</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+
+                <button class="btn btn-primary" id="btn-generate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Generate Model
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- History Modal -->
-    <div id="modal-history" class="modal-backdrop">
-        <div class="modal-card">
+    <!-- SETTINGS MODAL -->
+    <div class="modal-overlay" id="modal-settings">
+        <div class="modal-card glass-solid">
+            <div class="modal-header">
+                <div class="modal-title">Settings & Configuration</div>
+                <button class="modal-close" id="btn-close-settings">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">xKiro API Key</label>
+                <div class="form-input-row">
+                    <input type="password" id="api-key-input" class="form-input" placeholder="sk-..." style="padding-right: 50px;">
+                    <button class="input-action-btn" id="btn-toggle-key" type="button">Show</button>
+                </div>
+                <div class="form-hint">Stored locally in this browser. Requests route securely through the Cloudflare Worker proxy.</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">xKiro Model ID</label>
+                <input type="text" id="model-id-input" class="form-input" value="qwen/qwen3-max:free" placeholder="e.g. qwen/qwen3-max:free">
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button class="btn btn-primary" id="btn-save-settings" style="flex: 1; justify-content: center;">Save Settings</button>
+                <button class="btn" id="btn-test-conn" style="justify-content: center;">Test Connection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div class="modal-overlay" id="modal-history">
+        <div class="modal-card glass-solid">
             <div class="modal-header">
                 <div class="modal-title">Generation History</div>
-                <button id="btn-close-history" class="modal-close">&times;</button>
+                <button class="modal-close" id="btn-close-history">&times;</button>
             </div>
-            <div class="modal-body">
-                <div id="history-list" class="history-list">
-                    <!-- Dynamic history items inserted here -->
+            <div class="list-container" id="history-list-container">
+                <div style="text-align: center; color: var(--text-dim); padding: 24px; font-size: 12px;">No generations stored yet.</div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                <button class="btn" id="btn-clear-history" style="font-size: 11px; color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KNOWLEDGE & NOTEBOOKS MODAL -->
+    <div class="modal-overlay" id="modal-knowledge">
+        <div class="modal-card glass-solid knowledge-modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Knowledge & Notebooks System</div>
+                <button class="modal-close" id="btn-close-knowledge">&times;</button>
+            </div>
+            
+            <div class="knowledge-layout">
+                <!-- Sidebar Notebooks -->
+                <div class="notebook-sidebar">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Notebooks</span>
+                        <button class="btn" id="btn-add-notebook" style="padding: 2px 6px; font-size: 11px;">+ New</button>
+                    </div>
+                    <div id="notebook-tabs-container" style="display: flex; flex-direction: column; gap: 4px;">
+                        <!-- Injected dynamically -->
+                    </div>
+                    <div style="margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 6px;">
+                        <button class="btn" id="btn-export-knowledge" style="font-size: 11px; justify-content: center;">Export Backup</button>
+                        <label class="btn" style="font-size: 11px; justify-content: center; cursor: pointer;">
+                            Import Backup
+                            <input type="file" id="import-knowledge-file" accept=".json" style="display: none;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Main Knowledge Content Area -->
+                <div class="knowledge-content-area">
+                    <div class="knowledge-toolbar">
+                        <input type="text" id="knowledge-search" class="search-input" placeholder="Search references, concepts, tags...">
+                        <button class="btn btn-primary" id="btn-add-script" style="font-size: 11px;">+ Add Script</button>
+                    </div>
+                    <div class="list-container" id="references-list-container" style="flex: 1; max-height: 310px;">
+                        <!-- Injected dynamically -->
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between;" id="knowledge-stats-bar">
+                        <span>Loading stats...</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer" style="justify-content: space-between;">
-                <button id="btn-clear-history" class="btn" style="color: var(--danger);">Clear History</button>
-                <button id="btn-close-history-footer" class="btn">Close</button>
-            </div>
         </div>
     </div>
 
-    <!-- Code Viewer Modal -->
-    <div id="modal-code" class="modal-backdrop">
-        <div class="modal-card code-viewer-card">
+    <!-- SCRIPT EDITOR / ADD MODAL -->
+    <div class="modal-overlay" id="modal-script-form">
+        <div class="modal-card glass-solid">
             <div class="modal-header">
-                <div class="modal-title">Roblox Luau Script</div>
-                <button id="btn-close-code" class="modal-close">&times;</button>
+                <div class="modal-title" id="script-form-title">Add Reference Script</div>
+                <button class="modal-close" id="btn-close-script-form">&times;</button>
             </div>
-            <div class="modal-body" style="display: flex; flex-direction: column;">
-                <div class="form-hint" style="margin-bottom: 6px;">Directly pasteable into Roblox Studio's Command Bar.</div>
-                <textarea id="code-textarea" class="code-textarea" readonly></textarea>
+            <input type="hidden" id="edit-script-id">
+            
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" id="form-script-title" class="form-input" placeholder="e.g. Medieval Stone Watchtower">
             </div>
-            <div class="modal-footer">
-                <button id="btn-copy-luau" class="btn">Copy Luau</button>
-                <button id="btn-download-lua-modal" class="btn btn-primary">Download .lua</button>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label class="form-label">Notebook</label>
+                    <select id="form-script-notebook" class="form-select">
+                        <!-- Injected dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags (comma separated)</label>
+                    <input type="text" id="form-script-tags" class="form-input" placeholder="tower, medieval, stone, wood">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <input type="text" id="form-script-desc" class="form-input" placeholder="A detailed description of the construction pattern...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Roblox Luau Script</label>
+                <textarea id="form-script-code" class="form-textarea" placeholder="local part = Instance.new('Part') ..."></textarea>
+                <div class="form-hint">The system automatically analyzes patterns and concepts upon saving.</div>
+            </div>
+
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn" id="btn-cancel-script-form">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-script-form">Save Reference</button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
+    <!-- SCRIPT INSPECTOR MODAL -->
+    <div class="modal-overlay" id="modal-script-inspector">
+        <div class="modal-card glass-solid code-modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="inspector-title">Script Inspector</div>
+                <button class="modal-close" id="btn-close-inspector">&times;</button>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                    <span id="inspector-notebook">Notebook: Architecture</span>
+                    <span id="inspector-date">Added: Oct 4, 2026</span>
+                </div>
+                <div id="inspector-desc" style="color: var(--text-main);">Description...</div>
+                
+                <div>
+                    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 4px; font-size: 11px; text-transform: uppercase;">Detected Concepts & Patterns</div>
+                    <div id="inspector-concepts" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+                </div>
+
+                <div>
+                    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 4px; font-size: 11px; text-transform: uppercase;">Luau Script Source</div>
+                    <pre class="code-block" id="inspector-code">-- script code...</pre>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;">
+                <button class="btn" id="btn-inspector-delete" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);">Delete</button>
+                <button class="btn" id="btn-inspector-edit">Edit</button>
+                <button class="btn btn-primary" id="btn-inspector-use">Use as Reference</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GENERATION DEBUG MODAL -->
+    <div class="modal-overlay" id="modal-debug">
+        <div class="modal-card glass-solid code-modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Generation Details & Knowledge Audit</div>
+                <button class="modal-close" id="btn-close-debug">&times;</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
+                <div>
+                    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">User Prompt</div>
+                    <div id="debug-prompt" style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid var(--border-subtle);"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Retrieved Knowledge References Used</div>
+                    <div id="debug-refs" style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid var(--border-subtle); max-height: 120px; overflow-y: auto;"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Validation & Repair Report</div>
+                    <div id="debug-validation" style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid var(--border-subtle); font-family: 'JetBrains Mono', monospace; font-size: 11px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LUAU CODE VIEWER MODAL -->
+    <div class="modal-overlay" id="modal-code">
+        <div class="modal-card glass-solid code-modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Roblox Luau Code</div>
+                <button class="modal-close" id="btn-close-code">&times;</button>
+            </div>
+            <pre class="code-block" id="luau-code-pre">-- Luau code will appear here...</pre>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn" id="btn-copy-luau">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copy Luau
+                </button>
+                <button class="btn btn-primary" id="btn-download-lua-modal">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download .lua
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
-    <!-- Main Logic Script -->
+    <!-- APPLICATION SCRIPT -->
     <script type="module">
         import * as THREE from "three";
         import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-        // Constants & Proxy Configuration
+        // Cloudflare Worker Proxy Endpoint
         const XKiroProxy = "https://brickforge.capijuniorvara.workers.dev";
 
-        // State Management
-        let appState = {
-            apiKey: localStorage.getItem("brickforge_apikey") || "",
-            modelId: localStorage.getItem("brickforge_modelid") || "qwen/qwen3-max:free",
-            quality: "Standard",
-            referenceImage: null,
-            isWireframe: false,
-            isGridVisible: true,
-            currentModelData: null,
-            history: JSON.parse(localStorage.getItem("brickforge_history") || "[]")
-        };
+        // Application State
+        let apiKey = localStorage.getItem('brickforge_api_key') || '';
+        let modelId = localStorage.getItem('brickforge_model_id') || 'qwen/qwen3-max:free';
+        let currentQuality = 'Standard';
+        let referenceImageBase64 = null;
+        let currentModelData = null;
+        let lastGenerationAudit = null;
+        let generationHistory = JSON.parse(localStorage.getItem('brickforge_history') || '[]');
 
-        // DOM Elements
-        const statusDot = document.getElementById("status-dot");
-        const statusText = document.getElementById("status-text");
-        const promptInput = document.getElementById("prompt-input");
-        const btnGenerate = document.getElementById("btn-generate");
-        const modelInfoOverlay = document.getElementById("model-info-overlay");
-        const infoName = document.getElementById("info-name");
-        const infoDesc = document.getElementById("info-desc");
-        const statParts = document.getElementById("stat-parts");
-        const statQuality = document.getElementById("stat-quality");
-        const viewportEmpty = document.getElementById("viewport-empty");
+        // Three.js Globals
+        let scene, camera, renderer, controls, modelGroup;
+        let gridHelper;
+        let isWireframe = false;
+        let isGridVisible = true;
 
-        // Modals
-        const modalSettings = document.getElementById("modal-settings");
-        const modalHistory = document.getElementById("modal-history");
-        const modalCode = document.getElementById("modal-code");
-        const settingApiKey = document.getElementById("setting-apikey");
-        const settingModelId = document.getElementById("setting-modelid");
-        const codeTextarea = document.getElementById("code-textarea");
+        // IndexedDB Knowledge Database
+        let db = null;
+        const DB_NAME = 'BrickForgeKnowledgeDB';
+        const DB_VERSION = 1;
 
-        // Image upload elements
-        const imageFileInput = document.getElementById("image-file-input");
-        const btnTriggerUpload = document.getElementById("btn-trigger-upload");
-        const imagePreviewBadge = document.getElementById("image-preview-badge");
-        const imagePreviewThumb = document.getElementById("image-preview-thumb");
-        const btnRemoveImage = document.getElementById("btn-remove-image");
+        // Initialize App on DOMContentLoaded
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initIndexedDB();
+                initThreeJS();
+            } catch (e) {
+                console.error('Initialization failed:', e);
+                const viewport = document.getElementById('viewport-container');
+                if (viewport) {
+                    viewport.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ef4444;font-size:13px;padding:20px;text-align:center;">WebGL or IndexedDB failed to initialize in this browser.</div>`;
+                }
+            }
+            setupEventListeners();
+            updateHistoryUI();
+            updateNotebookUI();
+        });
 
-        // Toast helper
-        function showToast(message, type = "success") {
-            const container = document.getElementById("toast-container");
-            const toast = document.createElement("div");
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = "0";
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    seedDefaultKnowledgeIfNeeded().then(resolve).catch(resolve);
+                };
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains('notebooks')) {
+                        database.createObjectStore('notebooks', { keyPath: 'id' });
+                    }
+                    if (!database.objectStoreNames.contains('references')) {
+                        const refStore = database.createObjectStore('references', { keyPath: 'id' });
+                        refStore.createIndex('notebookId', 'notebookId', { unique: false });
+                    }
+                };
+            });
         }
 
-        // Three.js Scene Setup
-        let scene, camera, renderer, controls;
-        let currentModelGroup = null;
-        let gridHelper = null;
+        async function seedDefaultKnowledgeIfNeeded() {
+            const notebooks = await dbGetAll('notebooks');
+            if (notebooks.length === 0) {
+                const defaultNotebooks = [
+                    { id: 'nb-arch', name: 'Architecture', createdAt: Date.now() },
+                    { id: 'nb-fantasy', name: 'Fantasy & Medieval', createdAt: Date.now() },
+                    { id: 'nb-props', name: 'Props & Details', createdAt: Date.now() }
+                ];
+                for (const nb of defaultNotebooks) {
+                    await dbPut('notebooks', nb);
+                }
 
-        function initThree() {
-            const container = document.getElementById("viewport-container");
-            const canvas = document.getElementById("webgl-canvas");
+                const defaultRefs = [
+                    {
+                        id: 'ref-1',
+                        notebookId: 'nb-fantasy',
+                        title: 'Medieval Stone Watchtower',
+                        description: 'A tall stone watchtower with square base, repeating vertical wall segments, wooden floor beams, and a conical roof.',
+                        tags: ['tower', 'medieval', 'stone', 'wood', 'roof'],
+                        script: `local model = Instance.new("Model")\nlocal base = Instance.new("Part")\nbase.Size = Vector3.new(16, 2, 16)\nbase.Position = Vector3.new(0, 1, 0)\nbase.Material = Enum.Material.Slate\nbase.Parent = model\n\nfor i = 1, 4 do\n  local wall = Instance.new("Part")\n  wall.Size = Vector3.new(14, 12, 2)\n  wall.Position = Vector3.new(0, 8, 0)\n  wall.Parent = model\nend`,
+                        concepts: ['square foundation', 'stacked vertical sections', 'repeating walls', 'stone material'],
+                        patterns: ['stacked_sections', 'symmetry', 'repeating_walls'],
+                        enabled: true,
+                        createdAt: Date.now()
+                    },
+                    {
+                        id: 'ref-2',
+                        notebookId: 'nb-arch',
+                        title: 'Classic Pillars & Beam Frame',
+                        description: 'Modular structural framing using vertical stone pillars and horizontal wooden support beams.',
+                        tags: ['pillar', 'beam', 'frame', 'modular', 'structure'],
+                        script: `local model = Instance.new("Model")\nfor x = -10, 10, 20 do\n  local pillar = Instance.new("Part")\n  pillar.Size = Vector3.new(2, 16, 2)\n  pillar.Position = Vector3.new(x, 8, 0)\n  pillar.Material = Enum.Material.Concrete\n  pillar.Parent = model\nend\nlocal beam = Instance.new("Part")\nbeam.Size = Vector3.new(24, 2, 4)\nbeam.Position = Vector3.new(0, 17, 0)\nbeam.Parent = model`,
+                        concepts: ['vertical pillars', 'horizontal beams', 'modular grid layout', 'concrete material'],
+                        patterns: ['repeated_pillars', 'horizontal_beams', 'grid_layout'],
+                        enabled: true,
+                        createdAt: Date.now()
+                    }
+                ];
+                for (const ref of defaultRefs) {
+                    await dbPut('references', ref);
+                }
+            }
+        }
 
+        // IndexedDB Helpers
+        function dbGetAll(storeName) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readonly');
+                const store = tx.objectStore(storeName);
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function dbPut(storeName, item) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.put(item);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function dbDelete(storeName, id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.delete(id);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function initThreeJS() {
+            const container = document.getElementById('viewport-container');
+            
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x070709);
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(40, 30, 40);
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 2000);
+            camera.position.set(30, 30, 30);
 
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: "high-performance" });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            container.appendChild(renderer.domElement);
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 - 0.01; // Don't go below ground
+            controls.maxPolarAngle = Math.PI / 2 - 0.01;
             controls.minDistance = 5;
             controls.maxDistance = 300;
 
@@ -967,306 +1205,775 @@
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            dirLight.position.set(50, 80, 50);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+            dirLight.position.set(40, 80, 50);
             dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-            dirLight.shadow.bias = -0.0001;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 300;
+            const d = 50;
+            dirLight.shadow.camera.left = -d;
+            dirLight.shadow.camera.right = d;
+            dirLight.shadow.camera.top = d;
+            dirLight.shadow.camera.bottom = -d;
+            dirLight.shadow.bias = -0.0005;
             scene.add(dirLight);
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 0.4);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222228, 0.4);
             hemiLight.position.set(0, 50, 0);
             scene.add(hemiLight);
 
-            // Grid
-            gridHelper = new THREE.GridHelper(200, 50, 0x33333d, 0x1a1a22);
-            gridHelper.position.y = 0;
+            // Ground Grid
+            gridHelper = new THREE.GridHelper(160, 80, 0x3b82f6, 0x27272a);
+            gridHelper.position.y = -0.01;
             scene.add(gridHelper);
 
-            // Ground plane for shadow catching
-            const shadowPlaneGeo = new THREE.PlaneGeometry(500, 500);
-            const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.25 });
-            const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
-            shadowPlane.rotation.x = -Math.PI / 2;
-            shadowPlane.position.y = -0.01;
-            shadowPlane.receiveShadow = true;
-            scene.add(shadowPlane);
+            modelGroup = new THREE.Group();
+            scene.add(modelGroup);
 
-            window.addEventListener("resize", onWindowResize);
-
-            // Render loop
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-                renderer.render(scene, camera);
-            }
+            window.addEventListener('resize', onWindowResize);
             animate();
         }
 
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const container = document.getElementById('viewport-container');
+            if (!container || !renderer || !camera) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(container.clientWidth, container.clientHeight);
         }
 
-        // Roblox Material to Three.js Material Mapping
-        function createRobloxMaterial(materialName, colorHex) {
-            const color = new THREE.Color(colorHex);
-            let matProps = { color: color, roughness: 0.6, metalness: 0.1 };
+        function setupEventListeners() {
+            // Quality Selector
+            document.querySelectorAll('.quality-pill').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.quality-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentQuality = btn.getAttribute('data-quality');
+                });
+            });
 
-            switch ((materialName || "").toLowerCase()) {
-                case "glass":
-                    return new THREE.MeshPhysicalMaterial({
-                        color: color,
-                        transmission: 0.6,
-                        opacity: 1,
-                        transparent: true,
-                        roughness: 0.1,
-                        ior: 1.5
-                    });
-                case "neon":
-                    return new THREE.MeshBasicMaterial({ color: color });
-                case "metal":
-                case "corrodedmetal":
-                case "diamondplate":
-                    matProps.metalness = 0.85;
-                    matProps.roughness = 0.25;
-                    break;
-                case "wood":
-                case "woodplanks":
-                    matProps.roughness = 0.8;
-                    break;
-                case "slate":
-                case "concrete":
-                case "cobblestone":
-                    matProps.roughness = 0.9;
-                    break;
-                case "smoothplastic":
-                case "plastic":
-                default:
-                    matProps.roughness = 0.5;
-                    break;
+            // Settings Modal
+            const modalSettings = document.getElementById('modal-settings');
+            const btnSettings = document.getElementById('btn-settings');
+            const btnCloseSettings = document.getElementById('btn-close-settings');
+            const btnSaveSettings = document.getElementById('btn-save-settings');
+            const btnTestConn = document.getElementById('btn-test-conn');
+            const btnToggleKey = document.getElementById('btn-toggle-key');
+            const apiKeyInput = document.getElementById('api-key-input');
+            const modelIdInput = document.getElementById('model-id-input');
+
+            if (btnSettings) {
+                btnSettings.addEventListener('click', () => {
+                    apiKeyInput.value = apiKey;
+                    modelIdInput.value = modelId;
+                    modalSettings.classList.add('open');
+                });
             }
-            return new THREE.MeshStandardMaterial(matProps);
-        }
+            if (btnCloseSettings) btnCloseSettings.addEventListener('click', () => modalSettings.classList.remove('open'));
 
-        // Render Model Data in Three.js
-        function renderModel(modelData) {
-            if (currentModelGroup) {
-                scene.remove(currentModelGroup);
-                currentModelGroup.traverse(child => {
-                    if (child.geometry) child.geometry.dispose();
-                    if (child.material) {
-                        if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
-                        else child.material.dispose();
+            if (btnToggleKey) {
+                btnToggleKey.addEventListener('click', () => {
+                    if (apiKeyInput.type === 'password') {
+                        apiKeyInput.type = 'text';
+                        btnToggleKey.textContent = 'Hide';
+                    } else {
+                        apiKeyInput.type = 'password';
+                        btnToggleKey.textContent = 'Show';
                     }
                 });
             }
 
-            currentModelGroup = new THREE.Group();
-            currentModelGroup.name = "GeneratedRobloxModel";
-
-            const parts = modelData.parts || [];
-            parts.forEach(part => {
-                const size = part.size || [4, 1, 4];
-                // Roblox size [X, Y, Z] -> Three.js box geometry dimensions
-                const geom = new THREE.BoxGeometry(size[0], size[1], size[2]);
-                const mat = createRobloxMaterial(part.material, part.color || "#888888");
-                if (appState.isWireframe) mat.wireframe = true;
-
-                const mesh = new THREE.Mesh(geom, mat);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-
-                const pos = part.position || [0, 0, 0];
-                mesh.position.set(pos[0], pos[1], pos[2]);
-
-                const rot = part.rotation || [0, 0, 0];
-                // Convert degrees to radians
-                mesh.rotation.set(
-                    THREE.MathUtils.degToRad(rot[0]),
-                    THREE.MathUtils.degToRad(rot[1]),
-                    THREE.MathUtils.degToRad(rot[2])
-                );
-
-                currentModelGroup.add(mesh);
-            });
-
-            scene.add(currentModelGroup);
-
-            // Update info overlay
-            infoName.textContent = modelData.name || "Untitled Build";
-            infoDesc.textContent = modelData.description || "Roblox brick model";
-            statParts.textContent = parts.length;
-            statQuality.textContent = appState.quality;
-            modelInfoOverlay.classList.add("visible");
-            viewportEmpty.classList.add("hidden");
-
-            frameModel();
-        }
-
-        function frameModel() {
-            if (!currentModelGroup) return;
-            const box = new THREE.Box3().setFromObject(currentModelGroup);
-            if (box.isEmpty()) return;
-
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-
-            const maxDim = Math.max(size.x, size.y, size.z);
-            let distance = maxDim * 2.2;
-            if (distance < 15) distance = 15;
-
-            const dir = new THREE.Vector3(1, 0.8, 1).normalize();
-            camera.position.copy(center).add(dir.multiplyScalar(distance));
-            controls.target.copy(center);
-            controls.update();
-        }
-
-        function resetCamera() {
-            if (currentModelGroup) {
-                frameModel();
-            } else {
-                camera.position.set(40, 30, 40);
-                controls.target.set(0, 0, 0);
-                controls.update();
-            }
-            showToast("Camera reset");
-        }
-
-        // Luau Code Generator
-        function generateLuauCode(modelData) {
-            let code = `-- [BrickForge Generated Luau Script]\n`;
-            code += `-- Model: ${modelData.name || "GeneratedModel"}\n`;
-            code += `-- Description: ${modelData.description || ""}\n\n`;
-            code += `local model = Instance.new("Model")\n`;
-            code += `model.Name = "${(modelData.name || "GeneratedModel").replace(/"/g, '\\"')}"\n`;
-            code += `model.Parent = workspace\n\n`;
-
-            const parts = modelData.parts || [];
-            parts.forEach((p, idx) => {
-                const pName = (p.name || `Part_${idx + 1}`).replace(/"/g, '\\"');
-                const size = p.size || [4, 1, 4];
-                const pos = p.position || [0, 0, 0];
-                const rot = p.rotation || [0, 0, 0];
-                const colorHex = p.color || "#888888";
-                const rgb = new THREE.Color(colorHex);
-                const r = Math.round(rgb.r * 255);
-                const g = Math.round(rgb.g * 255);
-                const b = Math.round(rgb.b * 255);
-                const material = p.material || "SmoothPlastic";
-
-                code += `local part_${idx + 1} = Instance.new("Part")\n`;
-                code += `part_${idx + 1}.Name = "${pName}"\n`;
-                code += `part_${idx + 1}.Size = Vector3.new(${size[0]}, ${size[1]}, ${size[2]})\n`;
-                code += `part_${idx + 1}.CFrame = CFrame.new(${pos[0]}, ${pos[1]}, ${pos[2]}) * CFrame.Angles(math.rad(${rot[0]}), math.rad(${rot[1]}), math.rad(${rot[2]}))\n`;
-                code += `part_${idx + 1}.Color = Color3.fromRGB(${r}, ${g}, ${b})\n`;
-                code += `part_${idx + 1}.Material = Enum.Material.${material} or Enum.Material.SmoothPlastic\n`;
-                code += `part_${idx + 1}.Anchored = true\n`;
-                code += `part_${idx + 1}.Parent = model\n\n`;
-            });
-
-            return code;
-        }
-
-        // Robust JSON Extractor & Validator
-        function parseAndValidateModel(rawText) {
-            let jsonStr = rawText.trim();
-            // Strip markdown code fences if present
-            const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-            if (fenceMatch) {
-                jsonStr = fenceMatch[1].trim();
-            } else {
-                // Find first '{' and last '}'
-                const firstBrace = jsonStr.indexOf('{');
-                const lastBrace = jsonStr.lastIndexOf('}');
-                if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-                    jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
-                }
+            if (btnSaveSettings) {
+                btnSaveSettings.addEventListener('click', () => {
+                    apiKey = apiKeyInput.value.trim();
+                    modelId = modelIdInput.value.trim() || 'qwen/qwen3-max:free';
+                    localStorage.setItem('brickforge_api_key', apiKey);
+                    localStorage.setItem('brickforge_model_id', modelId);
+                    modalSettings.classList.remove('open');
+                    showToast('Settings saved successfully.', 'success');
+                });
             }
 
-            let data;
-            try {
-                data = JSON.parse(jsonStr);
-            } catch (e) {
-                throw new Error("AI returned malformed JSON response that could not be parsed.");
+            if (btnTestConn) {
+                btnTestConn.addEventListener('click', async () => {
+                    const testKey = apiKeyInput.value.trim();
+                    if (!testKey) {
+                        showToast('Please enter an API key to test.', 'error');
+                        return;
+                    }
+                    showToast('Testing connection via proxy...', 'success');
+                    try {
+                        const res = await fetch(`${XKiroProxy}/v1/models`, {
+                            headers: { 'Authorization': `Bearer ${testKey}` }
+                        });
+                        if (res.ok) {
+                            showToast('Connection successful!', 'success');
+                        } else if (res.status === 401 || res.status === 403) {
+                            showToast('Connection failed: Invalid API key.', 'error');
+                        } else {
+                            showToast(`Connection failed (HTTP ${res.status})`, 'error');
+                        }
+                    } catch (e) {
+                        showToast('Request failed. Check network or worker proxy.', 'error');
+                    }
+                });
             }
 
-            if (!data.parts || !Array.isArray(data.parts)) {
-                throw new Error("AI response missing required 'parts' array.");
+            // History Modal
+            const modalHistory = document.getElementById('modal-history');
+            const btnHistory = document.getElementById('btn-history');
+            const btnCloseHistory = document.getElementById('btn-close-history');
+            const btnClearHistory = document.getElementById('btn-clear-history');
+
+            if (btnHistory) {
+                btnHistory.addEventListener('click', () => {
+                    updateHistoryUI();
+                    modalHistory.classList.add('open');
+                });
+            }
+            if (btnCloseHistory) btnCloseHistory.addEventListener('click', () => modalHistory.classList.remove('open'));
+            if (btnClearHistory) {
+                btnClearHistory.addEventListener('click', () => {
+                    generationHistory = [];
+                    localStorage.removeItem('brickforge_history');
+                    updateHistoryUI();
+                    showToast('History cleared', 'success');
+                });
             }
 
-            // Quality limits enforcement
-            const limits = { Quick: 70, Standard: 150, Detailed: 280 };
-            const maxParts = limits[appState.quality] || 150;
+            // Knowledge Modal
+            const modalKnowledge = document.getElementById('modal-knowledge');
+            const btnKnowledge = document.getElementById('btn-knowledge');
+            const btnCloseKnowledge = document.getElementById('btn-close-knowledge');
+            const btnAddNotebook = document.getElementById('btn-add-notebook');
+            const btnAddScript = document.getElementById('btn-add-script');
+            const btnExportKnowledge = document.getElementById('btn-export-knowledge');
+            const importFile = document.getElementById('import-knowledge-file');
+            const knowledgeSearch = document.getElementById('knowledge-search');
 
-            if (data.parts.length > maxParts) {
-                data.parts = data.parts.slice(0, maxParts);
+            if (btnKnowledge) {
+                btnKnowledge.addEventListener('click', () => {
+                    updateNotebookUI();
+                    modalKnowledge.classList.add('open');
+                });
+            }
+            if (btnCloseKnowledge) btnCloseKnowledge.addEventListener('click', () => modalKnowledge.classList.remove('open'));
+
+            if (btnAddNotebook) {
+                btnAddNotebook.addEventListener('click', async () => {
+                    const name = prompt('Enter new notebook name:');
+                    if (name && name.trim()) {
+                        const newNb = { id: 'nb-' + Date.now(), name: name.trim(), createdAt: Date.now() };
+                        await dbPut('notebooks', newNb);
+                        updateNotebookUI();
+                        showToast(`Notebook "${name}" created`, 'success');
+                    }
+                });
             }
 
-            // Validate parts
-            const validParts = [];
-            data.parts.forEach(p => {
-                if (!p.size || !Array.isArray(p.size) || p.size.length !== 3) return;
-                if (!p.position || !Array.isArray(p.position) || p.position.length !== 3) return;
-                
-                const size = p.size.map(n => typeof n === 'number' && !isNaN(n) && n > 0 ? Math.min(n, 200) : 4);
-                const pos = p.position.map(n => typeof n === 'number' && !isNaN(n) ? Math.max(Math.min(n, 500), -500) : 0);
-                const rot = (p.rotation && Array.isArray(p.rotation) && p.rotation.length === 3) 
-                    ? p.rotation.map(n => typeof n === 'number' && !isNaN(n) ? n : 0) 
-                    : [0, 0, 0];
+            if (btnAddScript) {
+                btnAddScript.addEventListener('click', () => openScriptFormModal());
+            }
 
-                validParts.push({
-                    name: typeof p.name === 'string' ? p.name : "Part",
-                    size: size,
-                    position: pos,
-                    rotation: rot,
-                    color: typeof p.color === 'string' && p.color.startsWith('#') ? p.color : "#888888",
-                    material: typeof p.material === 'string' ? p.material : "SmoothPlastic"
+            if (knowledgeSearch) {
+                knowledgeSearch.addEventListener('input', () => updateNotebookUI());
+            }
+
+            if (btnExportKnowledge) {
+                btnExportKnowledge.addEventListener('click', async () => {
+                    const notebooks = await dbGetAll('notebooks');
+                    const references = await dbGetAll('references');
+                    const backup = { version: 1, notebooks, references };
+                    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `BrickForge_Knowledge_Backup_${Date.now()}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('Knowledge backup exported', 'success');
+                });
+            }
+
+            if (importFile) {
+                importFile.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = async (evt) => {
+                        try {
+                            const data = JSON.parse(evt.target.result);
+                            if (data.notebooks && data.references) {
+                                for (const nb of data.notebooks) await dbPut('notebooks', nb);
+                                for (const ref of data.references) await dbPut('references', ref);
+                                updateNotebookUI();
+                                showToast('Knowledge successfully imported!', 'success');
+                            } else {
+                                showToast('Invalid backup file structure.', 'error');
+                            }
+                        } catch (err) {
+                            showToast('Failed to parse JSON backup.', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            // Script Form Modal
+            const modalScriptForm = document.getElementById('modal-script-form');
+            const btnCloseScriptForm = document.getElementById('btn-close-script-form');
+            const btnCancelScriptForm = document.getElementById('btn-cancel-script-form');
+            const btnSaveScriptForm = document.getElementById('btn-save-script-form');
+
+            if (btnCloseScriptForm) btnCloseScriptForm.addEventListener('click', () => modalScriptForm.classList.remove('open'));
+            if (btnCancelScriptForm) btnCancelScriptForm.addEventListener('click', () => modalScriptForm.classList.remove('open'));
+            if (btnSaveScriptForm) btnSaveScriptForm.addEventListener('click', saveScriptFormHandler);
+
+            // Script Inspector Modal
+            const modalInspector = document.getElementById('modal-script-inspector');
+            const btnCloseInspector = document.getElementById('btn-close-inspector');
+            const btnInspectorDelete = document.getElementById('btn-inspector-delete');
+            const btnInspectorEdit = document.getElementById('btn-inspector-edit');
+            const btnInspectorUse = document.getElementById('btn-inspector-use');
+
+            if (btnCloseInspector) btnCloseInspector.addEventListener('click', () => modalInspector.classList.remove('open'));
+            
+            // Save Generated Model as Reference button
+            const btnSaveAsRef = document.getElementById('btn-save-as-ref');
+            if (btnSaveAsRef) {
+                btnSaveAsRef.addEventListener('click', () => {
+                    if (!currentModelData) return;
+                    const luau = generateLuauCode(currentModelData);
+                    openScriptFormModal({
+                        title: currentModelData.name || 'Generated Model Reference',
+                        description: currentModelData.description || 'Saved from successful generation.',
+                        tags: ['generated', 'model'],
+                        script: luau
+                    });
+                });
+            }
+
+            // Feedback thumbs up/down
+            const btnThumbsUp = document.getElementById('btn-thumbs-up');
+            const btnThumbsDown = document.getElementById('btn-thumbs-down');
+            if (btnThumbsUp && btnThumbsDown) {
+                btnThumbsUp.addEventListener('click', () => {
+                    btnThumbsUp.classList.toggle('active-good');
+                    btnThumbsDown.classList.remove('active-poor');
+                    showToast('Thank you for your feedback!', 'success');
+                });
+                btnThumbsDown.addEventListener('click', () => {
+                    btnThumbsDown.classList.toggle('active-poor');
+                    btnThumbsUp.classList.remove('active-good');
+                    showToast('Feedback noted. Try selecting more relevant knowledge notebooks.', 'success');
+                });
+            }
+
+            // Debug Modal
+            const modalDebug = document.getElementById('modal-debug');
+            const btnToggleDebug = document.getElementById('btn-toggle-debug');
+            const btnCloseDebug = document.getElementById('btn-close-debug');
+            if (btnToggleDebug) {
+                btnToggleDebug.addEventListener('click', () => {
+                    if (!lastGenerationAudit) {
+                        showToast('No generation audit available yet.', 'error');
+                        return;
+                    }
+                    document.getElementById('debug-prompt').textContent = lastGenerationAudit.prompt;
+                    document.getElementById('debug-refs').innerHTML = lastGenerationAudit.references.length > 0 ? 
+                        lastGenerationAudit.references.map(r => `• <strong>${r.title}</strong> (${r.notebookName})`).join('<br>') : 'None used';
+                    document.getElementById('debug-validation').textContent = JSON.stringify(lastGenerationAudit.validationReport, null, 2);
+                    modalDebug.classList.add('open');
+                });
+            }
+            if (btnCloseDebug) btnCloseDebug.addEventListener('click', () => modalDebug.classList.remove('open'));
+
+            // Luau Code Viewer Modal
+            const modalCode = document.getElementById('modal-code');
+            const btnViewLuau = document.getElementById('btn-view-luau');
+            const btnCloseCode = document.getElementById('btn-close-code');
+            const btnCopyLuau = document.getElementById('btn-copy-luau');
+
+            if (btnViewLuau) {
+                btnViewLuau.addEventListener('click', () => {
+                    if (!currentModelData) return;
+                    document.getElementById('luau-code-pre').textContent = generateLuauCode(currentModelData);
+                    modalCode.classList.add('open');
+                });
+            }
+            if (btnCloseCode) btnCloseCode.addEventListener('click', () => modalCode.classList.remove('open'));
+
+            if (btnCopyLuau) {
+                btnCopyLuau.addEventListener('click', () => {
+                    if (!currentModelData) return;
+                    const code = generateLuauCode(currentModelData);
+                    copyToClipboard(code);
+                });
+            }
+
+            const downloadLuaHandler = () => {
+                if (!currentModelData) return;
+                const code = generateLuauCode(currentModelData);
+                const blob = new Blob([code], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = (currentModelData.name || 'RobloxModel').replace(/[^a-zA-Z0-9_]/g, '_') + '.lua';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Download started', 'success');
+            };
+
+            const btnDownloadLua = document.getElementById('btn-download-lua');
+            const btnDownloadLuaModal = document.getElementById('btn-download-lua-modal');
+            if (btnDownloadLua) btnDownloadLua.addEventListener('click', downloadLuaHandler);
+            if (btnDownloadLuaModal) btnDownloadLuaModal.addEventListener('click', downloadLuaHandler);
+
+            // Image Upload
+            const imageUpload = document.getElementById('image-upload');
+            const btnRemoveImage = document.getElementById('btn-remove-image');
+            if (imageUpload) {
+                imageUpload.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            referenceImageBase64 = event.target.result;
+                            document.getElementById('image-preview-thumb').src = referenceImageBase64;
+                            document.getElementById('image-file-name').textContent = file.name;
+                            document.getElementById('image-preview-badge').classList.add('visible');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            if (btnRemoveImage) {
+                btnRemoveImage.addEventListener('click', () => {
+                    referenceImageBase64 = null;
+                    if (imageUpload) imageUpload.value = '';
+                    document.getElementById('image-preview-badge').classList.remove('visible');
+                });
+            }
+
+            // Viewport Controls
+            const btnToggleGrid = document.getElementById('btn-toggle-grid');
+            const btnToggleWire = document.getElementById('btn-toggle-wire');
+            const btnFrameModel = document.getElementById('btn-frame-model');
+            const btnResetCam = document.getElementById('btn-reset-cam');
+
+            if (btnToggleGrid) {
+                btnToggleGrid.addEventListener('click', () => {
+                    isGridVisible = !isGridVisible;
+                    if (gridHelper) gridHelper.visible = isGridVisible;
+                    showToast(`Grid ${isGridVisible ? 'enabled' : 'disabled'}`, 'success');
+                });
+            }
+            if (btnToggleWire) {
+                btnToggleWire.addEventListener('click', () => {
+                    isWireframe = !isWireframe;
+                    if (modelGroup) {
+                        modelGroup.traverse(child => {
+                            if (child.isMesh && child.material) child.material.wireframe = isWireframe;
+                        });
+                    }
+                    showToast(`Wireframe ${isWireframe ? 'enabled' : 'disabled'}`, 'success');
+                });
+            }
+            if (btnFrameModel) btnFrameModel.addEventListener('click', frameModel);
+            if (btnResetCam) {
+                btnResetCam.addEventListener('click', () => {
+                    if (camera && controls) {
+                        camera.position.set(30, 30, 30);
+                        controls.target.set(0, 0, 0);
+                        controls.update();
+                        showToast('Camera reset', 'success');
+                    }
+                });
+            }
+
+            // Generate Trigger
+            const btnGenerate = document.getElementById('btn-generate');
+            const promptInput = document.getElementById('prompt-input');
+
+            if (btnGenerate) btnGenerate.addEventListener('click', generateModel);
+            if (promptInput) {
+                promptInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        generateModel();
+                    }
+                });
+            }
+
+            // Modal backdrop clicks & ESC key
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('open');
+                    }
                 });
             });
 
-            if (validParts.length === 0) {
-                throw new Error("No valid Roblox parts found in AI response.");
-            }
-
-            data.parts = validParts;
-            return data;
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal-overlay').forEach(o => o.classList.remove('open'));
+                }
+            });
         }
 
-        // API Request through Cloudflare Worker Proxy
-        async function generateModelFromAI(promptText, imageDataUrl, quality) {
-            if (!appState.apiKey) {
-                modalSettings.classList.add("open");
-                throw new Error("Please enter your xKiro API key in settings.");
+        function analyzeScript(scriptText, title, description, tags) {
+            const concepts = [];
+            const patterns = [];
+            const textLower = (scriptText + ' ' + title + ' ' + description + ' ' + tags.join(' ')).toLowerCase();
+
+            if (textLower.includes('foundation') || textLower.includes('base')) concepts.push('square foundation');
+            if (textLower.includes('pillar') || textLower.includes('column')) {
+                concepts.push('vertical pillars');
+                patterns.push('repeated_pillars');
             }
-            if (!promptText.trim()) {
-                throw new Error("Please enter a description for your Roblox model.");
+            if (textLower.includes('beam') || textLower.includes('support')) {
+                concepts.push('support beams');
+                patterns.push('horizontal_beams');
+            }
+            if (textLower.includes('roof') || textLower.includes('conical')) {
+                concepts.push('roof structure');
+                patterns.push('roof_assembly');
+            }
+            if (textLower.includes('for ') || textLower.includes('while ') || textLower.includes('loop')) {
+                patterns.push('procedural_loop');
+                concepts.push('repeated modular array');
+            }
+            if (textLower.includes('symmetry') || textLower.includes('mirror')) {
+                patterns.push('symmetry');
+            }
+            if (textLower.includes('stack') || textLower.includes('wall')) {
+                patterns.push('stacked_sections');
             }
 
-            const systemPrompt = `You are an expert Roblox architectural builder and spatial 3D model generator.
-You must construct physically coherent Roblox brick-built models using rectangular Parts in strict JSON format.
-Rules:
-- Return ONLY valid JSON matching the schema. No conversational text outside JSON.
-- Quality Mode: ${quality}. Parts count should align with this quality level.
-- Parts must touch or logically connect. Avoid floating random blocks.
-- Keep center around X=0, Z=0. Keep bottom near Y=0.
-- Use realistic Roblox stud dimensions (e.g. size [4, 1, 4], [10, 2, 2], etc.).
-- Use valid materials: SmoothPlastic, Wood, Slate, Concrete, Glass, Neon, Metal, Brick.
-- Use hex colors for 'color'.
-JSON Schema:
+            if (concepts.length === 0) concepts.push('structural block assembly');
+            if (patterns.length === 0) patterns.push('modular construction');
+
+            return { concepts, patterns };
+        }
+
+        async function retrieveRelevantKnowledge(promptText, selectedNotebookId, strength) {
+            const allRefs = await dbGetAll('references');
+            const activeRefs = allRefs.filter(r => r.enabled !== false);
+            const notebooks = await dbGetAll('notebooks');
+            const nbMap = {};
+            notebooks.forEach(n => nbMap[n.id] = n.name);
+
+            // Filter by notebook if specific notebook selected
+            let candidateRefs = activeRefs;
+            if (selectedNotebookId && selectedNotebookId !== 'automatic') {
+                candidateRefs = activeRefs.filter(r => r.notebookId === selectedNotebookId);
+            }
+
+            const promptWords = promptText.toLowerCase().split(/\W+/).filter(w => w.length > 2);
+
+            const scored = candidateRefs.map(ref => {
+                let score = 0;
+                const refText = (ref.title + ' ' + ref.description + ' ' + ref.tags.join(' ') + ' ' + ref.concepts.join(' ')).toLowerCase();
+                
+                promptWords.forEach(word => {
+                    if (refText.includes(word)) score += 2;
+                });
+
+                // Boost for recent or general relevance
+                if (score === 0 && strength === 'low') score = 0.5; // low strength includes fallback
+                else if (score === 0 && candidateRefs.length <= 3) score = 1;
+
+                return { ref, score, notebookName: nbMap[ref.notebookId] || 'Notebook' };
+            });
+
+            scored.sort((a, b) => b.score - a.score);
+
+            // Determine limit based on strength
+            let limit = 2;
+            if (strength === 'low') limit = 1;
+            if (strength === 'strong') limit = 3;
+
+            const selected = scored.filter(s => s.score > 0).slice(0, limit).map(s => ({
+                ...s.ref,
+                notebookName: s.notebookName
+            }));
+
+            return selected;
+        }
+
+        async function updateNotebookUI() {
+            const notebooks = await dbGetAll('notebooks');
+            const references = await dbGetAll('references');
+
+            // Update Gen Notebook Select dropdown
+            const genSelect = document.getElementById('gen-notebook-select');
+            if (genSelect) {
+                const currentVal = genSelect.value;
+                genSelect.innerHTML = `<option value="automatic">Automatic (All Notebooks)</option>`;
+                notebooks.forEach(nb => {
+                    const opt = document.createElement('option');
+                    opt.value = nb.id;
+                    opt.textContent = nb.name;
+                    genSelect.appendChild(opt);
+                });
+                genSelect.value = currentVal;
+            }
+
+            // Update Script Form Notebook select
+            const formSelect = document.getElementById('form-script-notebook');
+            if (formSelect) {
+                formSelect.innerHTML = '';
+                notebooks.forEach(nb => {
+                    const opt = document.createElement('option');
+                    opt.value = nb.id;
+                    opt.textContent = nb.name;
+                    formSelect.appendChild(opt);
+                });
+            }
+
+            // Update Sidebar Notebook Tabs in Knowledge Modal
+            const nbContainer = document.getElementById('notebook-tabs-container');
+            if (nbContainer) {
+                nbContainer.innerHTML = '';
+                // All Notebooks tab
+                const allTab = document.createElement('div');
+                allTab.className = 'notebook-tab active';
+                allTab.innerHTML = `<span>All Notebooks</span><span>${references.length}</span>`;
+                allTab.onclick = () => {
+                    document.querySelectorAll('.notebook-tab').forEach(t => t.classList.remove('active'));
+                    allTab.classList.add('active');
+                    renderReferencesList(references);
+                };
+                nbContainer.appendChild(allTab);
+
+                notebooks.forEach(nb => {
+                    const count = references.filter(r => r.notebookId === nb.id).length;
+                    const tab = document.createElement('div');
+                    tab.className = 'notebook-tab';
+                    tab.innerHTML = `<span>${nb.name}</span><span>${count}</span>`;
+                    tab.onclick = () => {
+                        document.querySelectorAll('.notebook-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        const filtered = references.filter(r => r.notebookId === nb.id);
+                        renderReferencesList(filtered);
+                    };
+                    nbContainer.appendChild(tab);
+                });
+            }
+
+            renderReferencesList(references);
+
+            // Update Stats Bar
+            const statsBar = document.getElementById('knowledge-stats-bar');
+            if (statsBar) {
+                const totalTags = new Set();
+                references.forEach(r => (r.tags || []).forEach(t => totalTags.add(t)));
+                statsBar.innerHTML = `<span>${notebooks.length} Notebooks • ${references.length} References • ${totalTags.size} Tags</span>`;
+            }
+        }
+
+        async function renderReferencesList(refs) {
+            const container = document.getElementById('references-list-container');
+            const searchInput = document.getElementById('knowledge-search');
+            if (!container) return;
+
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const filtered = refs.filter(r => {
+                if (!query) return true;
+                const text = (r.title + ' ' + r.description + ' ' + (r.tags || []).join(' ') + ' ' + (r.concepts || []).join(' ')).toLowerCase();
+                return text.includes(query);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 24px; font-size: 12px;">No reference scripts found.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach(ref => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${ref.title}</div>
+                        <div class="item-subtitle">${ref.description || 'No description'}</div>
+                        <div class="item-meta">
+                            <span>Tags: ${(ref.tags || []).slice(0, 3).join(', ')}</span>
+                            <span>Concepts: ${(ref.concepts || []).length}</span>
+                        </div>
+                    </div>
+                    <button class="btn" style="padding: 4px 8px; font-size: 11px;">Inspect</button>
+                `;
+                item.addEventListener('click', () => openScriptInspector(ref));
+                container.appendChild(item);
+            });
+        }
+
+        function openScriptFormModal(existing = null) {
+            const modal = document.getElementById('modal-script-form');
+            document.getElementById('script-form-title').textContent = existing ? 'Edit Reference Script' : 'Add Reference Script';
+            document.getElementById('edit-script-id').value = existing ? existing.id : '';
+            document.getElementById('form-script-title').value = existing ? existing.title : '';
+            document.getElementById('form-script-tags').value = existing ? (existing.tags || []).join(', ') : '';
+            document.getElementById('form-script-desc').value = existing ? existing.description : '';
+            document.getElementById('form-script-code').value = existing ? existing.script : '';
+            if (existing && existing.notebookId) {
+                document.getElementById('form-script-notebook').value = existing.notebookId;
+            }
+            modal.classList.add('open');
+        }
+
+        async function saveScriptFormHandler() {
+            const id = document.getElementById('edit-script-id').value || ('ref-' + Date.now());
+            const title = document.getElementById('form-script-title').value.trim();
+            const notebookId = document.getElementById('form-script-notebook').value;
+            const tags = document.getElementById('form-script-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+            const description = document.getElementById('form-script-desc').value.trim();
+            const script = document.getElementById('form-script-code').value.trim();
+
+            if (!title || !script) {
+                showToast('Please enter a title and Luau script source.', 'error');
+                return;
+            }
+
+            const analysis = analyzeScript(script, title, description, tags);
+
+            const refItem = {
+                id,
+                notebookId,
+                title,
+                description,
+                tags,
+                script,
+                concepts: analysis.concepts,
+                patterns: analysis.patterns,
+                enabled: true,
+                createdAt: Date.now()
+            };
+
+            await dbPut('references', refItem);
+            document.getElementById('modal-script-form').classList.remove('open');
+            updateNotebookUI();
+            showToast('Reference script saved and analyzed!', 'success');
+        }
+
+        async function openScriptInspector(ref) {
+            const modal = document.getElementById('modal-script-inspector');
+            document.getElementById('inspector-title').textContent = ref.title;
+            const notebooks = await dbGetAll('notebooks');
+            const nb = notebooks.find(n => n.id === ref.notebookId);
+            document.getElementById('inspector-notebook').textContent = `Notebook: ${nb ? nb.name : 'General'}`;
+            document.getElementById('inspector-date').textContent = `Added: ${new Date(ref.createdAt || Date.now()).toLocaleDateString()}`;
+            document.getElementById('inspector-desc').textContent = ref.description || 'No description provided.';
+            document.getElementById('inspector-code').textContent = ref.script;
+
+            const conceptsContainer = document.getElementById('inspector-concepts');
+            conceptsContainer.innerHTML = '';
+            (ref.concepts || []).forEach(c => {
+                const span = document.createElement('span');
+                span.className = 'tag-pill';
+                span.textContent = c;
+                conceptsContainer.appendChild(span);
+            });
+
+            document.getElementById('btn-inspector-delete').onclick = async () => {
+                if (confirm('Delete this reference script?')) {
+                    await dbDelete('references', ref.id);
+                    modal.classList.remove('open');
+                    updateNotebookUI();
+                    showToast('Reference deleted', 'success');
+                }
+            };
+
+            document.getElementById('btn-inspector-edit').onclick = () => {
+                modal.classList.remove('open');
+                openScriptFormModal(ref);
+            };
+
+            document.getElementById('btn-inspector-use').onclick = () => {
+                modal.classList.remove('open');
+                document.getElementById('prompt-input').value = `Build a structure inspired by: ${ref.title}. ${ref.description}`;
+                showToast('Loaded into generation prompt', 'success');
+            };
+
+            modal.classList.add('open');
+        }
+
+        async function generateModel() {
+            if (!apiKey) {
+                showToast('Please set your xKiro API key in settings.', 'error');
+                document.getElementById('modal-settings').classList.add('open');
+                return;
+            }
+
+            const promptInput = document.getElementById('prompt-input');
+            const promptText = promptInput ? promptInput.value.trim() : '';
+            if (!promptText) {
+                showToast('Please enter a description for your Roblox model.', 'error');
+                return;
+            }
+
+            const selectedNotebookId = document.getElementById('gen-notebook-select').value;
+            const referenceStrength = document.getElementById('gen-strength-select').value;
+
+            const btnGenerate = document.getElementById('btn-generate');
+            if (btnGenerate) btnGenerate.disabled = true;
+            setStatus('Retrieving knowledge...', 'loading');
+
+            // Step 1: Retrieve Knowledge References
+            const relevantRefs = await retrieveRelevantKnowledge(promptText, selectedNotebookId, referenceStrength);
+
+            setStatus('Planning & Generating...', 'loading');
+
+            const qualityPartLimits = {
+                'Quick': '30 to 70 parts',
+                'Standard': '70 to 150 parts',
+                'Detailed': '150 to 280 parts'
+            };
+
+            // Build Enriched Knowledge Context
+            let knowledgeContextPrompt = "";
+            if (relevantRefs.length > 0) {
+                knowledgeContextPrompt = "\nREFERENCE KNOWLEDGE:\n" + relevantRefs.map((r, i) => `
+Example ${i+1}: ${r.title}
+Detected Patterns: ${(r.patterns || []).join(', ')}
+Key Concepts: ${(r.concepts || []).join(', ')}
+Script Snippet:
+${r.script.substring(0, 500)}
+`).join('\n') + "\n";
+            }
+
+            const systemPrompt = `You are an expert Roblox procedural model architect. Your task is to construct a coherent, highly structured 3D Roblox model made of connected brick Parts based on the user's prompt and provided construction knowledge.
+Quality Mode: ${currentQuality} (${qualityPartLimits[currentQuality]}).
+${knowledgeContextPrompt}
+CONSTRUCTION RULES:
+- Use Roblox stud coordinates. Y is vertical height (bottom near Y=0). Center around X=0, Z=0.
+- Parts must logically connect (foundations, walls, pillars, beams, roofs). Avoid random floating blocks.
+- Assign appropriate roles to parts: "foundation", "wall", "pillar", "beam", "floor", "roof", "window", "door", "stair", "trim", "decoration".
+- Return ONLY valid JSON matching this schema:
 {
   "name": "Model Title",
-  "description": "Short description",
+  "description": "Short architecture description",
   "parts": [
     {
-      "name": "Baseplate",
-      "size": [20, 1, 20],
-      "position": [0, 0.5, 0],
-      "rotation": [0, 0, 0],
-      "color": "#666666",
-      "material": "Concrete"
+      "name": "PartName",
+      "size": [width_x, height_y, depth_z],
+      "position": [x, y, z],
+      "rotation": [pitch, yaw, roll],
+      "color": "#HEXCOLOR",
+      "material": "SmoothPlastic",
+      "role": "wall"
     }
   ]
 }`;
@@ -1275,367 +1982,371 @@ JSON Schema:
                 { role: "system", content: systemPrompt }
             ];
 
-            if (imageDataUrl) {
+            if (referenceImageBase64) {
                 messages.push({
                     role: "user",
                     content: [
                         { type: "text", text: promptText },
-                        { type: "image_url", image_url: { url: imageDataUrl } }
+                        { type: "image_url", image_url: { url: referenceImageBase64 } }
                     ]
                 });
             } else {
                 messages.push({ role: "user", content: promptText });
             }
 
-            const response = await fetch(`${XKiroProxy}/v1/chat/completions`, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${appState.apiKey}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: appState.modelId,
-                    messages: messages,
-                    temperature: 0.7
-                })
+            try {
+                const response = await fetch(`${XKiroProxy}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: modelId,
+                        messages: messages,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error('Unauthorized (401): Invalid API Key.');
+                    if (response.status === 403) throw new Error('Forbidden (403): Access denied.');
+                    if (response.status === 429) throw new Error('Rate limit exceeded (429). Please try again later.');
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices?.[0]?.message?.content;
+                if (!content) throw new Error('Received empty response from AI model.');
+
+                setStatus('Validating & Repairing...', 'loading');
+                const parsedData = extractAndValidateJSON(content, currentQuality);
+                
+                // Validation & Repair pass
+                const validationReport = validateAndRepairModel(parsedData);
+
+                currentModelData = parsedData;
+                lastGenerationAudit = {
+                    prompt: promptText,
+                    references: relevantRefs,
+                    validationReport
+                };
+
+                renderModel3D(parsedData, relevantRefs.length);
+                saveToHistory(parsedData, promptText);
+
+                setStatus('Ready', 'success');
+                showToast('Model successfully generated with knowledge context!', 'success');
+
+            } catch (err) {
+                console.error(err);
+                setStatus('Error', 'error');
+                showToast(err.message || 'Generation failed.', 'error');
+            } finally {
+                if (btnGenerate) btnGenerate.disabled = false;
+            }
+        }
+
+        function extractAndValidateJSON(text, quality) {
+            let jsonStr = text.trim();
+            if (jsonStr.startsWith('```')) {
+                jsonStr = jsonStr.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+            } else {
+                const firstBrace = jsonStr.indexOf('{');
+                const lastBrace = jsonStr.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1) {
+                    jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+                }
+            }
+
+            const raw = JSON.parse(jsonStr);
+            if (!raw.parts || !Array.isArray(raw.parts)) throw new Error('Invalid JSON schema: missing parts array.');
+
+            const limits = { 'Quick': 70, 'Standard': 150, 'Detailed': 280 };
+            const maxParts = limits[quality] || 150;
+
+            const validParts = [];
+            const validMaterials = ['smoothplastic', 'wood', 'slate', 'concrete', 'glass', 'neon', 'metal', 'brick'];
+
+            for (let i = 0; i < Math.min(raw.parts.length, maxParts); i++) {
+                const p = raw.parts[i];
+                let size = Array.isArray(p.size) && p.size.length === 3 ? p.size : [4, 1, 2];
+                size = size.map(v => (typeof v === 'number' && !isNaN(v) && isFinite(v) && v > 0) ? Math.min(Math.max(v, 0.2), 250) : 4);
+
+                let pos = Array.isArray(p.position) && p.position.length === 3 ? p.position : [0, 0, 0];
+                pos = pos.map(v => (typeof v === 'number' && !isNaN(v) && isFinite(v)) ? Math.min(Math.max(v, -350), 350) : 0);
+
+                let rot = Array.isArray(p.rotation) && p.rotation.length === 3 ? p.rotation : [0, 0, 0];
+                rot = rot.map(v => (typeof v === 'number' && !isNaN(v) && isFinite(v)) ? v : 0);
+
+                let color = typeof p.color === 'string' && p.color.startsWith('#') ? p.color : '#888888';
+
+                let material = typeof p.material === 'string' ? p.material : 'SmoothPlastic';
+                if (!validMaterials.includes(material.toLowerCase())) material = 'SmoothPlastic';
+
+                validParts.push({
+                    name: p.name || 'Part',
+                    size,
+                    position: pos,
+                    rotation: rot,
+                    color,
+                    material,
+                    role: p.role || 'part'
+                });
+            }
+
+            return {
+                name: raw.name || 'Roblox Model',
+                description: raw.description || '',
+                parts: validParts
+            };
+        }
+
+        function validateAndRepairModel(modelData) {
+            let repairedCount = 0;
+            modelData.parts.forEach(p => {
+                // Ensure no zero dimensions
+                p.size = p.size.map(s => s <= 0 ? 1 : s);
+                // Snap slight floating ground parts
+                if (p.role === 'foundation' && p.position[1] < 0) {
+                    p.position[1] = Math.max(0, p.position[1]);
+                    repairedCount++;
+                }
+            });
+            return {
+                totalParts: modelData.parts.length,
+                status: 'Passed with structural checks',
+                repairedAdjustments: repairedCount
+            };
+        }
+
+        function getThreeMaterial(matName, colorHex) {
+            const color = new THREE.Color(colorHex);
+            const m = (matName || '').toLowerCase();
+
+            if (m.includes('glass')) {
+                return new THREE.MeshPhysicalMaterial({ color, transparent: true, opacity: 0.65, roughness: 0.1, transmission: 0.8, ior: 1.5, wireframe: isWireframe });
+            } else if (m.includes('neon')) {
+                return new THREE.MeshBasicMaterial({ color, wireframe: isWireframe });
+            } else if (m.includes('metal')) {
+                return new THREE.MeshStandardMaterial({ color, metalness: 0.85, roughness: 0.2, wireframe: isWireframe });
+            } else if (m.includes('wood')) {
+                return new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0.05, wireframe: isWireframe });
+            } else if (m.includes('slate') || m.includes('concrete')) {
+                return new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0.05, wireframe: isWireframe });
+            } else {
+                return new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.05, wireframe: isWireframe });
+            }
+        }
+
+        function renderModel3D(modelData, refCount = 0) {
+            while (modelGroup.children.length > 0) {
+                const obj = modelGroup.children[0];
+                modelGroup.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) obj.material.forEach(mat => mat.dispose());
+                    else obj.material.dispose();
+                }
+            }
+
+            document.getElementById('viewport-empty').classList.add('hidden');
+            document.getElementById('post-gen-actions').classList.add('visible');
+            document.getElementById('model-stats').classList.add('visible');
+
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+
+            modelData.parts.forEach(p => {
+                const geom = new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]);
+                const mat = getThreeMaterial(p.material, p.color);
+                const mesh = new THREE.Mesh(geom, mat);
+
+                mesh.position.set(p.position[0], p.position[1], p.position[2]);
+                mesh.rotation.set(
+                    THREE.MathUtils.degToRad(p.rotation[0]),
+                    THREE.MathUtils.degToRad(p.rotation[1]),
+                    THREE.MathUtils.degToRad(p.rotation[2])
+                );
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                modelGroup.add(mesh);
+
+                const hx = p.size[0] / 2, hy = p.size[1] / 2, hz = p.size[2] / 2;
+                minX = Math.min(minX, p.position[0] - hx);
+                maxX = Math.max(maxX, p.position[0] + hx);
+                minY = Math.min(minY, p.position[1] - hy);
+                maxY = Math.max(maxY, p.position[1] + hy);
+                minZ = Math.min(minZ, p.position[2] - hz);
+                maxZ = Math.max(maxZ, p.position[2] + hz);
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                let errorData = null;
-                try {
-                    errorData = JSON.parse(errorText);
-                } catch {}
-                const message = errorData?.error?.message || `xKiro request failed with HTTP ${response.status}`;
-                throw new Error(message);
-            }
+            document.getElementById('stat-name').textContent = modelData.name;
+            document.getElementById('stat-parts').textContent = modelData.parts.length;
+            document.getElementById('stat-height').textContent = `${Math.round(maxY - Math.max(0, minY))} studs`;
+            document.getElementById('stat-footprint').textContent = `${Math.round(maxX - minX)} × ${Math.round(maxZ - minZ)}`;
+            document.getElementById('stat-quality').textContent = currentQuality;
+            document.getElementById('stat-refs').textContent = `References: ${refCount} used`;
 
-            const result = await response.json();
-            const content = result.choices?.[0]?.message?.content;
-            if (!content) {
-                throw new Error("Received empty response from xKiro AI model.");
-            }
+            frameModel();
+        }
 
-            return parseAndValidateModel(content);
+        function frameModel() {
+            if (!modelGroup || modelGroup.children.length === 0) return;
+            const box = new THREE.Box3().setFromObject(modelGroup);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const dist = maxDim * 2.2 + 10;
+
+            if (camera && controls) {
+                camera.position.set(center.x + dist * 0.7, center.y + dist * 0.6, center.z + dist * 0.7);
+                controls.target.copy(center);
+                controls.update();
+                showToast('Camera framed model', 'success');
+            }
+        }
+
+        function generateLuauCode(modelData) {
+            let code = `-- Generated by BrickForge\n`;
+            code += `-- Model: ${modelData.name}\n`;
+            code += `-- Description: ${modelData.description || ''}\n\n`;
+            code += `local model = Instance.new("Model")\n`;
+            code += `model.Name = "${(modelData.name || 'GeneratedModel').replace(/[^a-zA-Z0-9_]/g, '_')}"\n`;
+            code += `model.Parent = workspace\n\n`;
+
+            modelData.parts.forEach((p, idx) => {
+                const pName = (p.name || `Part_${idx+1}`).replace(/[^a-zA-Z0-9_]/g, '_');
+                const col = new THREE.Color(p.color);
+                const r = Math.round(col.r * 255);
+                const g = Math.round(col.g * 255);
+                const b = Math.round(col.b * 255);
+
+                let matEnum = 'Enum.Material.SmoothPlastic';
+                const m = (p.material || '').toLowerCase();
+                if (m.includes('wood')) matEnum = 'Enum.Material.Wood';
+                else if (m.includes('slate')) matEnum = 'Enum.Material.Slate';
+                else if (m.includes('concrete')) matEnum = 'Enum.Material.Concrete';
+                else if (m.includes('glass')) matEnum = 'Enum.Material.Glass';
+                else if (m.includes('neon')) matEnum = 'Enum.Material.Neon';
+                else if (m.includes('metal')) matEnum = 'Enum.Material.Metal';
+                else if (m.includes('brick')) matEnum = 'Enum.Material.Brick';
+
+                code += `local ${pName}_${idx} = Instance.new("Part")\n`;
+                code += `${pName}_${idx}.Name = "${p.name || 'Part'}"\n`;
+                code += `${pName}_${idx}.Size = Vector3.new(${p.size[0]}, ${p.size[1]}, ${p.size[2]})\n`;
+                code += `${pName}_${idx}.CFrame = CFrame.new(${p.position[0]}, ${p.position[1]}, ${p.position[2]}) * CFrame.Angles(math.rad(${p.rotation[0]}), math.rad(${p.rotation[1]}), math.rad(${p.rotation[2]}))\n`;
+                code += `${pName}_${idx}.Color = Color3.fromRGB(${r}, ${g}, ${b})\n`;
+                code += `${pName}_${idx}.Material = ${matEnum}\n`;
+                code += `${pName}_${idx}.Anchored = true\n`;
+                code += `${pName}_${idx}.Parent = model\n\n`;
+            });
+
+            return code;
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Luau copied to clipboard', 'success');
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) showToast('Luau copied to clipboard', 'success');
+                else showToast('Failed to copy Luau', 'error');
+            } catch (err) {
+                showToast('Failed to copy Luau', 'error');
+            }
+            document.body.removeChild(textarea);
         }
 
         // History Management
-        function saveToHistory(name, prompt, modelData) {
+        function saveToHistory(modelData, promptText) {
             const entry = {
-                id: Date.now(),
-                name: name || "Untitled",
-                prompt: prompt,
+                name: modelData.name,
+                prompt: promptText,
                 data: modelData,
-                timestamp: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
-            appState.history.unshift(entry);
-            if (appState.history.length > 10) appState.history.pop();
-            localStorage.setItem("brickforge_history", JSON.stringify(appState.history));
-            renderHistoryList();
+            generationHistory.unshift(entry);
+            if (generationHistory.length > 10) generationHistory.pop();
+            localStorage.setItem('brickforge_history', JSON.stringify(generationHistory));
+            updateHistoryUI();
         }
 
-        function renderHistoryList() {
-            const listEl = document.getElementById("history-list");
-            listEl.innerHTML = "";
-            if (appState.history.length === 0) {
-                listEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">No generation history yet.</div>`;
+        function updateHistoryUI() {
+            const container = document.getElementById('history-list-container');
+            if (!container) return;
+            if (generationHistory.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 24px; font-size: 12px;">No generations stored yet.</div>';
                 return;
             }
-
-            appState.history.forEach(item => {
-                const itemEl = document.createElement("div");
-                itemEl.className = "history-item";
-                itemEl.innerHTML = `
-                    <div class="history-item-info">
-                        <div class="history-item-title">${item.name}</div>
-                        <div class="history-item-meta">${item.timestamp} • ${item.data.parts.length} parts</div>
+            container.innerHTML = '';
+            generationHistory.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-subtitle">"${item.prompt}"</div>
+                        <div class="item-meta"><span>${item.timestamp}</span></div>
                     </div>
-                    <button class="btn" style="font-size: 11px; padding: 4px 8px;">Restore</button>
+                    <button class="btn" style="padding: 4px 8px; font-size: 11px;">Restore</button>
                 `;
-                itemEl.addEventListener("click", () => {
-                    appState.currentModelData = item.data;
-                    renderModel(item.data);
-                    modalHistory.classList.remove("open");
-                    showToast(`Restored "${item.name}"`);
+                div.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentModelData = item.data;
+                    renderModel3D(item.data);
+                    document.getElementById('modal-history').classList.remove('open');
+                    showToast(`Restored "${item.name}"`, 'success');
                 });
-                listEl.appendChild(itemEl);
+                container.appendChild(div);
             });
         }
 
-        // Event Listeners & UI Binding
-        document.addEventListener("DOMContentLoaded", () => {
-            initThree();
+        // UI Helpers
+        function setStatus(text, type) {
+            const statusText = document.getElementById('status-text');
+            const dot = document.getElementById('status-dot');
+            if (statusText) statusText.textContent = text;
+            if (dot) dot.className = `status-dot ${type}`;
+        }
 
-            // Load settings into inputs
-            settingApiKey.value = appState.apiKey;
-            settingModelId.value = appState.modelId;
-            renderHistoryList();
-
-            // Status pill update
-            if (appState.apiKey) {
-                statusDot.className = "status-dot ready";
-                statusText.textContent = "Ready";
-            } else {
-                statusDot.className = "status-dot error";
-                statusText.textContent = "API Key Needed";
-            }
-
-            // Navigation Modals
-            const btnHistory = document.getElementById("btn-history");
-            const btnSettings = document.getElementById("btn-settings");
-            const btnCloseSettings = document.getElementById("btn-close-settings");
-            const btnCloseHistory = document.getElementById("btn-close-history");
-            const btnCloseHistoryFooter = document.getElementById("btn-close-history-footer");
-            const btnClearHistory = document.getElementById("btn-clear-history");
-            const btnViewLuau = document.getElementById("btn-view-luau");
-            const btnCloseCode = document.getElementById("btn-close-code");
-            const btnCopyLuau = document.getElementById("btn-copy-luau");
-            const btnDownloadLuaModal = document.getElementById("btn-download-lua-modal");
-            const btnDownloadLua = document.getElementById("btn-download-lua");
-
-            btnSettings.addEventListener("click", () => modalSettings.classList.add("open"));
-            btnCloseSettings.addEventListener("click", () => modalSettings.classList.remove("open"));
-            
-            btnHistory.addEventListener("click", () => {
-                renderHistoryList();
-                modalHistory.classList.add("open");
-            });
-            btnCloseHistory.addEventListener("click", () => modalHistory.classList.remove("open"));
-            btnCloseHistoryFooter.addEventListener("click", () => modalHistory.classList.remove("open"));
-
-            btnClearHistory.addEventListener("click", () => {
-                appState.history = [];
-                localStorage.removeItem("brickforge_history");
-                renderHistoryList();
-                showToast("History cleared");
-            });
-
-            // Close modals clicking backdrop
-            [modalSettings, modalHistory, modalCode].forEach(modal => {
-                modal.addEventListener("click", (e) => {
-                    if (e.target === modal) modal.classList.remove("open");
-                });
-            });
-
-            // ESC key to close modals
-            window.addEventListener("keydown", (e) => {
-                if (e.key === "Escape") {
-                    modalSettings.classList.remove("open");
-                    modalHistory.classList.remove("open");
-                    modalCode.classList.remove("open");
-                }
-            });
-
-            // Settings Save & Test Connection
-            const btnSaveSettings = document.getElementById("btn-save-settings");
-            const btnTestConn = document.getElementById("btn-test-conn");
-            const btnToggleKey = document.getElementById("btn-toggle-key");
-
-            btnToggleKey.addEventListener("click", () => {
-                settingApiKey.type = settingApiKey.type === "password" ? "text" : "password";
-            });
-
-            btnSaveSettings.addEventListener("click", () => {
-                appState.apiKey = settingApiKey.value.trim();
-                appState.modelId = settingModelId.value.trim() || "qwen/qwen3-max:free";
-                localStorage.setItem("brickforge_apikey", appState.apiKey);
-                localStorage.setItem("brickforge_modelid", appState.modelId);
-                modalSettings.classList.remove("open");
-                showToast("Settings saved successfully");
-                if (appState.apiKey) {
-                    statusDot.className = "status-dot ready";
-                    statusText.textContent = "Ready";
-                }
-            });
-
-            btnTestConn.addEventListener("click", async () => {
-                const testKey = settingApiKey.value.trim();
-                if (!testKey) {
-                    showToast("Enter an API key to test", "error");
-                    return;
-                }
-                btnTestConn.textContent = "Testing...";
-                try {
-                    const res = await fetch(`${XKiroProxy}/v1/usage`, {
-                        method: "GET",
-                        headers: { "Authorization": `Bearer ${testKey}` }
-                    });
-                    if (res.ok) {
-                        showToast("Connection successful!");
-                    } else if (res.status === 401 || res.status === 403) {
-                        showToast("Invalid xKiro API key.", "error");
-                    } else {
-                        const errTxt = await res.text();
-                        showToast(`API Error (${res.status}): ${errTxt || 'Failed'}`, "error");
-                    }
-                } catch (err) {
-                    showToast("Could not reach Cloudflare proxy / network error.", "error");
-                } finally {
-                    btnTestConn.textContent = "Test Connection";
-                }
-            });
-
-            // Quality Selection
-            document.querySelectorAll(".quality-btn").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    document.querySelectorAll(".quality-btn").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                    appState.quality = btn.dataset.quality;
-                });
-            });
-
-            // Image Upload Handling
-            btnTriggerUpload.addEventListener("click", () => imageFileInput.click());
-            imageFileInput.addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    appState.referenceImage = evt.target.result;
-                    imagePreviewThumb.src = appState.referenceImage;
-                    imagePreviewBadge.classList.add("visible");
-                    showToast("Reference image attached");
-                };
-                reader.readAsDataURL(file);
-            });
-
-            btnRemoveImage.addEventListener("click", () => {
-                appState.referenceImage = null;
-                imageFileInput.value = "";
-                imagePreviewBadge.classList.remove("visible");
-                showToast("Reference image removed");
-            });
-
-            // Viewport Toolbar Controls
-            const btnToggleGrid = document.getElementById("btn-toggle-grid");
-            const btnToggleWire = document.getElementById("btn-toggle-wire");
-            const btnFrameModel = document.getElementById("btn-frame-model");
-            const btnResetCam = document.getElementById("btn-reset-cam");
-
-            btnToggleGrid.addEventListener("click", () => {
-                appState.isGridVisible = !appState.isGridVisible;
-                gridHelper.visible = appState.isGridVisible;
-                btnToggleGrid.classList.toggle("active", appState.isGridVisible);
-                showToast(`Grid ${appState.isGridVisible ? "enabled" : "disabled"}`);
-            });
-
-            btnToggleWire.addEventListener("click", () => {
-                appState.isWireframe = !appState.isWireframe;
-                btnToggleWire.classList.toggle("active", appState.isWireframe);
-                if (currentModelGroup) {
-                    currentModelGroup.traverse(child => {
-                        if (child.material) {
-                            if (Array.isArray(child.material)) child.material.forEach(m => m.wireframe = appState.isWireframe);
-                            else child.material.wireframe = appState.isWireframe;
-                        }
-                    });
-                }
-                showToast(`Wireframe ${appState.isWireframe ? "enabled" : "disabled"}`);
-            });
-
-            btnFrameModel.addEventListener("click", () => {
-                frameModel();
-                showToast("Model framed");
-            });
-
-            btnResetCam.addEventListener("click", () => {
-                resetCamera();
-            });
-
-            // Generate Action
-            async function triggerGeneration() {
-                const prompt = promptInput.value.trim();
-                if (!appState.apiKey) {
-                    modalSettings.classList.add("open");
-                    showToast("Please configure your API key in Settings", "error");
-                    return;
-                }
-                if (!prompt) {
-                    showToast("Please enter a model description", "error");
-                    return;
-                }
-
-                btnGenerate.disabled = true;
-                btnGenerate.textContent = "Generating...";
-                statusDot.className = "status-dot generating";
-                statusText.textContent = "Generating...";
-
-                try {
-                    const modelData = await generateModelFromAI(prompt, appState.referenceImage, appState.quality);
-                    appState.currentModelData = modelData;
-                    renderModel(modelData);
-                    saveToHistory(modelData.name, prompt, modelData);
-                    showToast("Model generated successfully!");
-                    statusDot.className = "status-dot ready";
-                    statusText.textContent = "Ready";
-                } catch (err) {
-                    console.error(err);
-                    showToast(err.message || "Generation failed", "error");
-                    statusDot.className = "status-dot error";
-                    statusText.textContent = "Error";
-                } finally {
-                    btnGenerate.disabled = false;
-                    btnGenerate.textContent = "Generate Model";
-                }
-            }
-
-            btnGenerate.addEventListener("click", triggerGeneration);
-            promptInput.addEventListener("keydown", (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                    e.preventDefault();
-                    triggerGeneration();
-                }
-            });
-
-            // Luau Code Modal & Actions
-            btnViewLuau.addEventListener("click", () => {
-                if (!appState.currentModelData) return;
-                codeTextarea.value = generateLuauCode(appState.currentModelData);
-                modalCode.classList.add("open");
-            });
-
-            btnCloseCode.addEventListener("click", () => modalCode.classList.remove("open"));
-
-            function copyLuauToClipboard() {
-                if (!appState.currentModelData) return;
-                const code = generateLuauCode(appState.currentModelData);
-                navigator.clipboard.writeText(code).then(() => {
-                    showToast("Luau copied to clipboard");
-                }).catch(() => {
-                    // Fallback
-                    codeTextarea.select();
-                    document.execCommand("copy");
-                    showToast("Luau copied");
-                });
-            }
-
-            btnCopyLuau.addEventListener("click", copyLuauToClipboard);
-
-            function downloadLuaFile() {
-                if (!appState.currentModelData) return;
-                const code = generateLuauCode(appState.currentModelData);
-                const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${(appState.currentModelData.name || "Model").replace(/[^a-z0-9]/gi, '_')}.lua`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast("Download started");
-            }
-
-            btnDownloadLua.addEventListener("click", downloadLuaFile);
-            btnDownloadLuaModal.addEventListener("click", downloadLuaFile);
-        });
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.25s ease';
+                setTimeout(() => toast.remove(), 250);
+            }, 3000);
+        }
 
         // Global Error Handlers
-        window.onerror = function(msg, url, line) {
-            console.error("Global Error:", msg, "at", url, ":", line);
-        };
-        window.addEventListener("unhandledrejection", (event) => {
-            console.error("Unhandled Promise Rejection:", event.reason);
+        window.addEventListener('onerror', (msg, url, line) => {
+            console.error('Global Error:', msg, url, line);
+        });
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled Promise Rejection:', event.reason);
         });
     </script>
 </body>
